@@ -1,0 +1,6 @@
+@PropertyHubAPI_HostAddress = http://localhost:5283
+
+GET {{PropertyHubAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
