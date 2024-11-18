@@ -2,11 +2,11 @@
 {
     public class Address
     {
-        public string? StreetAddress { get; set; }
-        public string? City { get; set; }
-        public string? State { get; set; }
-        public string? PostalCode { get; set; }
-        public string? Country { get; set; }
-        public string? AreaCode { get; set; }
+        public required string StreetNumber { get; set; }
+        public required string StreetName { get; set; }
+        public required string City { get; set; }
+        public required string Province { get; set; }
+        public required string PostalCode { get; set; }
+        public required string Country { get; set; }
     }
 }

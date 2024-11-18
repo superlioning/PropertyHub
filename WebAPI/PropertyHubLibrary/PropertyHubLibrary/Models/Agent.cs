@@ -2,9 +2,9 @@
 {
     public class Agent
     {
-        public string? AgentId { get; set; }
-        public string? AgentName { get; set; }
-        public string? AgentCompanyName { get; set; }
-        public string? AgentPhone { get; set; }
+        public required string AgentId { get; set; }
+        public required string AgentName { get; set; }
+        public required string AgentCompanyName { get; set; }
+        public required string AgentPhone { get; set; }
     }
 }
