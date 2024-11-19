@@ -1,10 +1,15 @@
-﻿namespace PropertyHubAPI.DTO.Agencies
+﻿using PropertyHubAPI.DTO.Addresses;
+
+namespace PropertyHubAPI.DTO.Agencies
 {
     public class AgentDto
     {
-        public string? AgentId { get; set; }
-        public string? AgentName { get; set; }
-        public string? AgentCompanyName { get; set; }
-        public string? AgentPhone { get; set; }
+        public required string RegistrationNumber { get; set; }
+        public required string Name { get; set; }
+        public required string RegistrationCategory { get; set; }
+        public required string BrokerageTradeName { get; set; }
+        public required string BrokeragePhone { get; set; }
+        public required string BrokerageEmail { get; set; }
+        public required AddressDto BrokerageAddress { get; set; }
     }
 }
