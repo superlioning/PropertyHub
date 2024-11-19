@@ -1,8 +1,8 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
-using PropertyHubAPI.Connector;
+using PropertyHubLibrary.Connector;
 using PropertyHubAPI.DTO.Features;
-using PropertyHubLibrary.Models;
+using PropertyHubAPI.DTO.Property;
 
 namespace PropertyHubAPI.Services
 {
@@ -18,78 +18,94 @@ namespace PropertyHubAPI.Services
             _table = _awsConnector.LoadContentTable(_tableName);
         }
 
-        public async Task<IEnumerable<Feature>> GetFeaturesAsync()
+        public async Task<IEnumerable<FeatureDto>> GetFeaturesAsync()
         {
             DynamoDBContext context = _awsConnector.Context;
 
             // Perform a scan operation to retrieve the Property items
-            var properties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
+            var properties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
 
-            // Extract the Feature attribute from each Property item
+            // Extract the Feature attribute from each Property item and map to FeatureDto
             var features = properties
-             .Where(property => property.Features != null)
-             .Select(property => property.Features)
-             .ToList();
+                .Where(property => property.Feature != null)
+                .Select(property => property.Feature)
+                .ToList();
 
-            return features;
+            return features!;
         }
 
-        public async Task<IEnumerable<Feature>> GetFeaturesBySizeAsync(string size)
+        public async Task<IEnumerable<FeatureDto>> GetFeaturesByWalkScoreAsync(int walkScore)
         {
             DynamoDBContext context = _awsConnector.Context;
 
             // Perform a scan operation to retrieve the Property items
-            var properties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
+            var properties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
 
-            // Extract the Feature attribute from each Property item and filter by size
-            var FeaturesWithSize = properties
-                .Where(property => property.Features != null)
-                .Select(property => property.Features)
-                .Where(feature => feature.Size.Equals(size, StringComparison.OrdinalIgnoreCase))
+            // Extract the Feature attribute from each Property item and filter by WalkScore
+            var features = properties
+                .Where(property => property.Feature != null && property.Feature.WalkScore >= walkScore)
+                .Select(property => property.Feature)
                 .ToList();
 
-            return FeaturesWithSize;
+            return features!;
         }
 
-        public async Task<IEnumerable<Property>> GetPropertiesBySizeAsync(string size)
+        public async Task<IEnumerable<FeatureDto>> GetFeaturesByTransitScoreAsync(int transitScore)
         {
             DynamoDBContext context = _awsConnector.Context;
 
             // Perform a scan operation to retrieve the Property items
-            var allProperties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
+            var properties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
 
-            // Filter properties by size
-            var propertiesWithSize = allProperties
-                .Where(property => property.Features != null &&
-                                   property.Features.Size.Equals(size, StringComparison.OrdinalIgnoreCase))
+            // Extract the Feature attribute from each Property item and filter by TransitScore
+            var features = properties
+                .Where(property => property.Feature != null && property.Feature.TransitScore >= transitScore)
+                .Select(property => property.Feature)
                 .ToList();
 
-            return propertiesWithSize;
+            return features!;
         }
 
-        public async Task<bool> AddFeatureToPropertyAsync(string propertyId, FeatureDto featureDto)
+        public async Task<IEnumerable<FeatureDto>> GetFeaturesByBikeScoreAsync(int bikeScore)
         {
             DynamoDBContext context = _awsConnector.Context;
-            var property = await context.LoadAsync<Property>(propertyId);
+
+            // Perform a scan operation to retrieve the Property items
+            var properties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
+
+            // Extract the Feature attribute from each Property item and filter by BikeScore
+            var features = properties
+                .Where(property => property.Feature != null && property.Feature.BikeScore >= bikeScore)
+                .Select(property => property.Feature)
+                .ToList();
+
+            return features!;
+        }
+
+        public async Task<IEnumerable<FeatureDto>> GetFeaturesByEducationScoreAsync(int educationScore)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            // Perform a scan operation to retrieve the Property items
+            var properties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
+
+            // Extract the Feature attribute from each Property item and filter by EducationScore
+            var features = properties
+                .Where(property => property.Feature != null && property.Feature.EducationScore >= educationScore)
+                .Select(property => property.Feature)
+                .ToList();
+
+            return features!;
+        }
+
+        public async Task<bool> AddFeatureToPropertyAsync(string MLS, FeatureDto featureDto)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+            var property = await context.LoadAsync<PropertyDto>(MLS);
             if (property == null) return false;
 
-            if (property.Features == null)
-            {
-                property.Features = new Feature();
-            }
-
-            var newFeature = new Feature
-            {
-                Size = featureDto.Size,
-                Rooms = featureDto.Rooms,
-                Bathrooms = featureDto.Bathrooms,
-                HasParking = featureDto.HasParking,
-                WalkScore = featureDto.WalkScore,
-                TransitScore = featureDto.TransitScore,
-                BikeScore = featureDto.BikeScore
-            };
-
-            property.Features = newFeature;
+            // Add the feature to the property
+            property.Feature = featureDto;
 
             try
             {
@@ -98,30 +114,23 @@ namespace PropertyHubAPI.Services
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error occurred while adding feature: {ex.Message}");
                 return false;
             }
         }
 
-        public async Task<bool> UpdateFeature(string propertyId, Feature updatedFeature)
+        public async Task<bool> UpdateFeature(string MLS, FeatureDto updatedFeature)
         {
             try
             {
                 DynamoDBContext context = _awsConnector.Context;
 
-                Property property = await context.LoadAsync<Property>(propertyId);
+                PropertyDto property = await context.LoadAsync<PropertyDto>(MLS);
                 if (property == null) return false;
 
-                // Check if there are feature to update
-                if (property.Features == null)
-                {
+                // Update the feature
+                property.Feature = updatedFeature;
 
-                    property.Features = new Feature();
-                }
-                else
-                {
-                    property.Features = updatedFeature;
-
-                }
                 await context.SaveAsync(property);
 
                 return true;
@@ -133,28 +142,23 @@ namespace PropertyHubAPI.Services
             }
         }
 
-        public async Task<bool> DeleteFeatureFromPropertyAsync(string propertyId)
+        public async Task<bool> DeleteFeatureFromPropertyAsync(string MLS)
         {
             DynamoDBContext context = _awsConnector.Context;
 
-            // Retrieve the property by PropertyId
-            var property = await context.LoadAsync<Property>(propertyId);
-            if (property == null)
-            {
-                return false; // Property not found
-            }
+            var property = await context.LoadAsync<PropertyDto>(MLS);
+            if (property == null) return false;
 
-            // Clear the feature list
-            property.Features = null;
+            property.Feature = null;
 
             try
             {
-                // Save the updated property
                 await context.SaveAsync(property);
                 return true; // Deletion of feature successful
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error occurred while deleting feature: {ex.Message}");
                 return false; // Deletion failed
             }
         }

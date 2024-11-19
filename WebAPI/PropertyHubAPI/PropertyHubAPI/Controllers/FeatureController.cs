@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using PropertyHubAPI.DTO.Features;
 using PropertyHubAPI.DTO.Property;
 using PropertyHubAPI.Services;
-using PropertyHubLibrary.Models;
 
 namespace PropertyHubAPI.Controllers
 {
@@ -16,7 +15,6 @@ namespace PropertyHubAPI.Controllers
         private readonly IFeatureRepository _featureRepository;
         private readonly IMapper _mapper;
 
-
         public FeatureController(IPropertyHubRespository propertyHubRespository, IFeatureRepository featureRepository, IMapper mapper)
         {
             _propertyHubRespository = propertyHubRespository;
@@ -24,20 +22,20 @@ namespace PropertyHubAPI.Controllers
             _mapper = mapper;
         }
 
-        //Get all Features
+        // Get all Features
         [HttpGet]
-        public async Task<ActionResult<Feature>> GetAllFeatures()
+        public async Task<ActionResult<IEnumerable<FeatureDto>>> GetAllFeatures()
         {
             var features = await _featureRepository.GetFeaturesAsync();
             var results = _mapper.Map<IEnumerable<FeatureDto>>(features);
             return Ok(results);
         }
 
-        //get feature with size
-        [HttpGet("sizeFeature/{size}")]
-        public async Task<ActionResult<Feature>> GetFeatureWithSize(string size)
+        // Get Features by WalkScore
+        [HttpGet("walkScore/{walkScore}")]
+        public async Task<ActionResult<IEnumerable<FeatureDto>>> GetFeaturesByWalkScore(int walkScore)
         {
-            var features = await _featureRepository.GetFeaturesBySizeAsync(size);
+            var features = await _featureRepository.GetFeaturesByWalkScoreAsync(walkScore);
             if (features == null)
             {
                 return NotFound();
@@ -46,48 +44,69 @@ namespace PropertyHubAPI.Controllers
             return Ok(results);
         }
 
-
-        //get all properties with size
-        [HttpGet("sizeProperty/{size}")]
-        public async Task<ActionResult<Property>> GetPropertyWithSize(string size)
+        // Get Features by TransitScore
+        [HttpGet("transitScore/{transitScore}")]
+        public async Task<ActionResult<IEnumerable<FeatureDto>>> GetFeaturesByTransitScore(int transitScore)
         {
-            var properties = await _featureRepository.GetPropertiesBySizeAsync(size);
-            if (properties == null)
+            var features = await _featureRepository.GetFeaturesByTransitScoreAsync(transitScore);
+            if (features == null)
             {
                 return NotFound();
             }
-            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            var results = _mapper.Map<IEnumerable<FeatureDto>>(features);
             return Ok(results);
         }
 
-        //add feature to the property 
-        [HttpPost("{propertyId}/feature")]
-        public async Task<IActionResult> AddFeatureToProperty(string propertyId, [FromBody] FeatureDto featureDto)
+        // Get Features by BikeScore
+        [HttpGet("bikeScore/{bikeScore}")]
+        public async Task<ActionResult<IEnumerable<FeatureDto>>> GetFeaturesByBikeScore(int bikeScore)
         {
-            var feature = _mapper.Map<FeatureDto>(featureDto);
+            var features = await _featureRepository.GetFeaturesByBikeScoreAsync(bikeScore);
+            if (features == null)
+            {
+                return NotFound();
+            }
+            var results = _mapper.Map<IEnumerable<FeatureDto>>(features);
+            return Ok(results);
+        }
 
-            var success = await _featureRepository.AddFeatureToPropertyAsync(propertyId, feature);
+        // Get Features by EducationScore
+        [HttpGet("educationScore/{educationScore}")]
+        public async Task<ActionResult<IEnumerable<FeatureDto>>> GetFeaturesByEducationScore(int educationScore)
+        {
+            var features = await _featureRepository.GetFeaturesByEducationScoreAsync(educationScore);
+            if (features == null)
+            {
+                return NotFound();
+            }
+            var results = _mapper.Map<IEnumerable<FeatureDto>>(features);
+            return Ok(results);
+        }
+
+        // Add feature to the Property
+        [HttpPost("{MLS}/feature")]
+        public async Task<IActionResult> AddFeatureToProperty(string MLS, [FromBody] FeatureDto featureDto)
+        {
+            var success = await _featureRepository.AddFeatureToPropertyAsync(MLS, featureDto);
 
             if (!success)
             {
-                return NotFound($"Property with ID {propertyId} not found.");
+                return NotFound($"Property with MLS {MLS} not found.");
             }
             return Ok(new { Message = "Feature created successfully.", FeatureDto = featureDto });
         }
 
-        //Update feature
-        [HttpPut("{propertyId}/updateFeature")]
-        public async Task<IActionResult> UpdateFeature(string propertyId, [FromBody] FeatureDto featureDto)
+        // Update feature
+        [HttpPut("{MLS}/updateFeature")]
+        public async Task<IActionResult> UpdateFeature(string MLS, [FromBody] FeatureDto featureDto)
         {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
+            var property = await _propertyHubRespository.GetPropertyByIdAsync(MLS);
             if (property == null)
             {
                 return NotFound();
             }
-            var updatedFeature = _mapper.Map<Feature>(featureDto);
 
-            // Update the feature in the repository
-            var updateResult = await _featureRepository.UpdateFeature(propertyId, updatedFeature);
+            var updateResult = await _featureRepository.UpdateFeature(MLS, featureDto);
 
             if (updateResult)
                 return Ok("Feature updated successfully.");
@@ -95,23 +114,23 @@ namespace PropertyHubAPI.Controllers
                 return StatusCode(500, "An error occurred while updating the feature.");
         }
 
-        //Patch Category
-        [HttpPatch("{propertyId}/updateFeature")]
-        public async Task<IActionResult> UpdateFeaturePatch(string propertyId, [FromBody] JsonPatchDocument<Feature> patchDoc)
+        // Patch feature
+        [HttpPatch("{MLS}/updateFeature")]
+        public async Task<IActionResult> UpdateFeaturePatch(string MLS, [FromBody] JsonPatchDocument<FeatureDto> patchDoc)
         {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
+            var property = await _propertyHubRespository.GetPropertyByIdAsync(MLS);
             if (property == null)
             {
                 return NotFound();
             }
 
-            if (property.Features == null)
+            var propertyDto = _mapper.Map<PropertyDto>(property);
+            if (propertyDto.Feature == null)
             {
                 return BadRequest("No feature available to update.");
             }
 
-            var featureToUpdate = property.Features;
-
+            var featureToUpdate = _mapper.Map<FeatureDto>(propertyDto.Feature);
             patchDoc.ApplyTo(featureToUpdate, ModelState);
 
             if (!ModelState.IsValid)
@@ -119,7 +138,7 @@ namespace PropertyHubAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var updateResult = await _featureRepository.UpdateFeature(propertyId, featureToUpdate);
+            var updateResult = await _featureRepository.UpdateFeature(MLS, featureToUpdate);
 
             if (updateResult)
                 return Ok(new { Message = "Feature updated successfully." });
@@ -127,24 +146,24 @@ namespace PropertyHubAPI.Controllers
                 return StatusCode(500, "An error occurred while updating the feature.");
         }
 
-        //Delete feature in the property
-        [HttpDelete("{propertyId}/deleteFeature")]
-        public async Task<IActionResult> DeleteFeatureFromProperty(string propertyId)
+        // Delete feature from the Property
+        [HttpDelete("{MLS}/deleteFeature")]
+        public async Task<IActionResult> DeleteFeatureFromProperty(string MLS)
         {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
+            var property = await _propertyHubRespository.GetPropertyByIdAsync(MLS);
             if (property == null)
             {
                 return NotFound();
             }
 
-            var success = await _featureRepository.DeleteFeatureFromPropertyAsync(propertyId);
+            var success = await _featureRepository.DeleteFeatureFromPropertyAsync(MLS);
 
             if (!success)
             {
-                return NotFound($"Cannot delete feature from the property ID: {propertyId}.");
+                return NotFound($"Cannot delete feature from the Property with MLS: {MLS}.");
             }
 
-            return Ok(new { Message = "Feature deleted from property successfully." });
+            return Ok(new { Message = "Feature deleted from Property successfully." });
         }
     }
 }
