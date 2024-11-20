@@ -46,9 +46,9 @@ namespace PropertyHubAPI.Controllers
 
         //add agent
         [HttpPost("{propertyId}/agent")]
-        public async Task<IActionResult> AddAgentToProperty(string propertyId, [FromBody] AgentCreationDto agentDto)
+        public async Task<IActionResult> AddAgentToProperty(string propertyId, [FromBody] AgentCreateDto agentDto)
         {
-            var agent = _mapper.Map<AgentCreationDto>(agentDto);
+            var agent = _mapper.Map<AgentCreateDto>(agentDto);
 
             var success = await _agentRepository.AddAgentToPropertyAsync(propertyId, agent);
 

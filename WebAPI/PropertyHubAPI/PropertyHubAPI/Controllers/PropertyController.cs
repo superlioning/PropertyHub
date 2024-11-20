@@ -84,7 +84,7 @@ namespace PropertyHubAPI.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CreateProperty([FromBody] PropertyCreateionDto propertyDto)
+        public async Task<IActionResult> CreateProperty([FromBody] PropertyCreateDto propertyDto)
         {
             if (propertyDto == null)
             {

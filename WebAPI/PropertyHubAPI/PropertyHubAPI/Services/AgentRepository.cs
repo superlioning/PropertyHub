@@ -50,7 +50,7 @@ namespace PropertyHubAPI.Services
 
             return agent;
         }
-        public async Task<bool> AddAgentToPropertyAsync(string propertyId, AgentCreationDto agentDto)
+        public async Task<bool> AddAgentToPropertyAsync(string propertyId, AgentCreateDto agentDto)
         {
             DynamoDBContext context = _awsConnector.Context;
             var property = await context.LoadAsync<Property>(propertyId);

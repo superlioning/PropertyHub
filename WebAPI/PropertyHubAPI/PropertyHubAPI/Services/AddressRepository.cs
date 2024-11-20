@@ -1,8 +1,9 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
-using PropertyHubLibrary.Connector;
+using PropertyHubAPI.Connector;
 using PropertyHubAPI.DTO.Addresses;
-using PropertyHubAPI.DTO.Property;
+using PropertyHubLibrary.Connector;
+using PropertyHubLibrary.Models;
 
 namespace PropertyHubAPI.Services
 {
@@ -18,99 +19,95 @@ namespace PropertyHubAPI.Services
             _table = _awsConnector.LoadContentTable(_tableName);
         }
 
-        public async Task<IEnumerable<AddressDto>> GetAddressesAsync()
+        public async Task<IEnumerable<Address>> GetAddressesAsync()
         {
             DynamoDBContext context = _awsConnector.Context;
 
             // Perform a scan operation to retrieve the Property items
-            var properties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
+            var properties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
 
             // Extract the Address attribute from each Property item
             var addresses = properties
-                .Where(property => property.Address != null)
-                .Select(property => property.Address)
-                .ToList();
+             .Where(property => property.PropertyAddresses != null)
+             .Select(property => property.PropertyAddresses)
+            .ToList();
 
             return addresses;
         }
-
-        public async Task<IEnumerable<AddressDto>> GetAddressByCityAsync(string city)
+        public async Task<IEnumerable<Address>> GetAddressByCityAsync(string city)
         {
             DynamoDBContext context = _awsConnector.Context;
 
             // Perform a scan operation to retrieve the Property items
-            var properties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
+            var properties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
 
             // Extract the Address attribute from each Property item and filter by city
             var addressesInCity = properties
-                .Where(property => property.Address != null)
-                .Select(property => property.Address)
+                .Where(property => property.PropertyAddresses != null)
+                .Select(property => property.PropertyAddresses)
                 .Where(address => address.City.Equals(city, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             return addressesInCity;
         }
 
-        public async Task<IEnumerable<PropertyDto>> GetPropertiesByStreetAsync(string streetNumber, string streetName)
+
+
+        public async Task<IEnumerable<Property>> GetPropertiesByCityAsync(string city)
         {
             DynamoDBContext context = _awsConnector.Context;
 
             // Perform a scan operation to retrieve the Property items
-            var allProperties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
-
-            // Filter properties by street number and street name
-            var propertiesOnStreet = allProperties
-                .Where(property => property.Address != null &&
-                                   property.Address.StreetNumber.Equals(streetNumber, StringComparison.OrdinalIgnoreCase) &&
-                                   property.Address.StreetName.Equals(streetName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            return propertiesOnStreet;
-        }
-
-        public async Task<IEnumerable<PropertyDto>> GetPropertiesByCityAsync(string city)
-        {
-            DynamoDBContext context = _awsConnector.Context;
-
-            // Perform a scan operation to retrieve the Property items
-            var allProperties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
+            var allProperties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
 
             // Filter properties by city
             var propertiesInCity = allProperties
-                .Where(property => property.Address != null &&
-                                   property.Address.City.Equals(city, StringComparison.OrdinalIgnoreCase))
+                .Where(property => property.PropertyAddresses != null &&
+                                   property.PropertyAddresses.City.Equals(city, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             return propertiesInCity;
         }
 
-        public async Task<IEnumerable<PropertyDto>> GetPropertiesByPostalCodeAsync(string postalCode)
+
+        public async Task<IEnumerable<Property>> GetPropertiesByAreaAsync(string areaCode)
         {
             DynamoDBContext context = _awsConnector.Context;
 
             // Perform a scan operation to retrieve the Property items
-            var allProperties = await context.ScanAsync<PropertyDto>(new List<ScanCondition>()).GetRemainingAsync();
+            var allProperties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
 
-            // Filter properties by postal code
-            var propertiesInPostalCode = allProperties
-                .Where(property => property.Address != null &&
-                                   property.Address.PostalCode.Equals(postalCode, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            return propertiesInPostalCode;
+            // Filter properties by areacode
+            var propertiesInAreaCode = allProperties
+                .Where(property => property.PropertyAddresses != null &&
+                                   property.PropertyAddresses.AreaCode.Equals(areaCode, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+            return propertiesInAreaCode;
         }
 
-        public async Task<bool> UpdateAddress(string MLS, AddressDto updatedAddress)
+
+        public async Task<bool> UpdateAddress(string propertyId, Address updatedAddress)
         {
             try
             {
                 DynamoDBContext context = _awsConnector.Context;
 
-                PropertyDto property = await context.LoadAsync<PropertyDto>(MLS);
+                Property property = await context.LoadAsync<Property>(propertyId);
                 if (property == null) return false;
 
-                // Update the address
-                property.Address = updatedAddress;
+                // Check if there are addresses to update
+                if (property.PropertyAddresses == null)
+                {
+                    property.PropertyAddresses = new Address();
+                    property.PropertyAddresses.AreaCode = updatedAddress.PostalCode?.Substring(0, 3);
+                }
+                else
+                {
 
+                    property.PropertyAddresses = updatedAddress;
+                    property.PropertyAddresses.AreaCode = updatedAddress.PostalCode?.Substring(0, 3);
+
+                }
                 await context.SaveAsync(property);
 
                 return true;
@@ -122,13 +119,28 @@ namespace PropertyHubAPI.Services
             }
         }
 
-        public async Task<bool> AddAddressToPropertyAsync(string MLS, AddressDto addressDto)
+        public async Task<bool> AddAddressToPropertyAsync(string propertyId, AddressDto addressDto)
         {
             DynamoDBContext context = _awsConnector.Context;
-            var property = await context.LoadAsync<PropertyDto>(MLS);
+            var property = await context.LoadAsync<Property>(propertyId);
             if (property == null) return false;
 
-            property.Address = addressDto;
+            if (property.PropertyAddresses == null)
+            {
+                property.PropertyAddresses = new Address();
+            }
+
+            var newAddress = new Address
+            {
+                StreetAddress = addressDto.StreetAddress,
+                City = addressDto.City,
+                State = addressDto.State,
+                PostalCode = addressDto.PostalCode,
+                Country = addressDto.Country,
+                AreaCode = addressDto.PostalCode?.Substring(0, 3)
+            };
+
+            property.PropertyAddresses = newAddress;
 
             try
             {
@@ -137,42 +149,32 @@ namespace PropertyHubAPI.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error occurred while adding address: {ex.Message}");
                 return false;
             }
         }
 
-        public async Task<bool> DeleteAddressFromPropertyAsync(string MLS)
+        public async Task<bool> DeleteAddressFromPropertyAsync(string propertyId)
         {
             DynamoDBContext context = _awsConnector.Context;
 
-            // Retrieve the property by MLS
-            var property = await context.LoadAsync<PropertyDto>(MLS);
+            // Retrieve the property by PropertyId
+            var property = await context.LoadAsync<Property>(propertyId);
             if (property == null)
             {
                 return false; // Property not found
             }
 
-            // Replace address fields with "N/A"
-            property.Address = new AddressDto
-            {
-                StreetNumber = "N/A",
-                StreetName = "N/A",
-                City = "N/A",
-                Province = "N/A",
-                PostalCode = "N/A",
-                Country = "N/A"
-            };
+            // Clear the address list
+            property.PropertyAddresses = null;
 
             try
             {
                 // Save the updated property
                 await context.SaveAsync(property);
-                return true; // Deletion of address successful
+                return true; // Deletion of all addresses successful
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error occurred while deleting address: {ex.Message}");
                 return false; // Deletion failed
             }
         }
