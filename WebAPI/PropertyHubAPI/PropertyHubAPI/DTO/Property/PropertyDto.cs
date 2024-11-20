@@ -18,7 +18,6 @@ namespace PropertyHubAPI.DTO.Property
         public required string Status { get; set; }
         public required string Description { get; set; }
         public required string AgentRegistrationNumber { get; set; }
-        public required string AgentName { get; set; }
         public List<string>? ImageUrls { get; set; }
         public FeatureDto? Feature { get; set; }
         public required DateTime DateListed { get; set; }

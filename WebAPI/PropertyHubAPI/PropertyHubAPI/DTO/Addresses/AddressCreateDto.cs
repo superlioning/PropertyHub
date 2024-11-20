@@ -1,6 +1,6 @@
 ﻿namespace PropertyHubAPI.DTO.Addresses
 {
-    public class AddressDto
+    public class AddressCreateDto
     {
         public required string StreetNumber { get; set; }
         public required string StreetName { get; set; }

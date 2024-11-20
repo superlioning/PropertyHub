@@ -16,7 +16,7 @@ namespace PropertyHubAPI.DTO.Property
         public AddressDto? Address { get; set; }
         public string? Status { get; set; }
         public string? Description { get; set; }
-        public string? AgentName { get; set; }
+        public string? AgentRegistrationNumber { get; set; }
         public List<string>? ImageUrls { get; set; }
         public FeatureDto? Feature { get; set; }
         public required DateTime LastUpdate { get; set; }
