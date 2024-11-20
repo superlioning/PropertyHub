@@ -24,7 +24,6 @@ namespace PropertyHubLibrary.Models
 
         // Store only necessary information for agent
         public required string AgentRegistrationNumber { get; set; }
-        public required string AgentName { get; set; }
 
         // Optional fields
         public List<string>? ImageUrls { get; set; }
