@@ -1,16 +1,17 @@
-﻿using PropertyHubAPI.DTO.Features;
+﻿using PropertyHubLibrary.Models;
 
 namespace PropertyHubAPI.Services
 {
     public interface IFeatureRepository
     {
-        Task<IEnumerable<FeatureDto>> GetFeaturesAsync();
-        Task<IEnumerable<FeatureDto>> GetFeaturesByWalkScoreAsync(int walkScore);
-        Task<IEnumerable<FeatureDto>> GetFeaturesByTransitScoreAsync(int transitScore);
-        Task<IEnumerable<FeatureDto>> GetFeaturesByBikeScoreAsync(int bikeScore);
-        Task<IEnumerable<FeatureDto>> GetFeaturesByEducationScoreAsync(int educationScore);
-        Task<bool> AddFeatureToPropertyAsync(string MLS, FeatureDto featureDto);
-        Task<bool> UpdateFeature(string MLS, FeatureDto updatedFeature);
-        Task<bool> DeleteFeatureFromPropertyAsync(string MLS);
+        Task<IEnumerable<Feature>> GetFeaturesAsync();
+        Task<IEnumerable<Feature>> GetFeaturesByWalkScoreAsync(int walkScore);
+        Task<IEnumerable<Feature>> GetFeaturesByTransitScoreAsync(int transitScore);
+        Task<IEnumerable<Feature>> GetFeaturesByBikeScoreAsync(int bikeScore);
+        Task<IEnumerable<Feature>> GetFeaturesByEducationScoreAsync(int educationScore);
+
+        Task<bool> AddFeatureToPropertyAsync(string mls, Feature feature);
+        Task<bool> UpdateFeatureAsync(string mls, Feature updatedFeature);
+        Task<bool> DeleteFeatureFromPropertyAsync(string mls);
     }
 }
