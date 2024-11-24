@@ -108,7 +108,7 @@ namespace PropertyHubAPI.Controllers
         [HttpPut("{mls}/updateFeature")]
         public async Task<IActionResult> UpdateFeatureInPropertyAsync(string mls, [FromBody] FeatureUpdateDto featureUpdateDto)
         {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(mls);
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
             if (property == null)
             {
                 return NotFound();
@@ -133,7 +133,7 @@ namespace PropertyHubAPI.Controllers
         [HttpPatch("{mls}/patchFeature")]
         public async Task<IActionResult> PatchFeatureInPropertyAsync(string mls, [FromBody] JsonPatchDocument<FeatureUpdateDto> patchDocument)
         {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(mls);
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
             if (property == null)
             {
                 return NotFound();
@@ -167,7 +167,7 @@ namespace PropertyHubAPI.Controllers
         [HttpDelete("{mls}/deleteFeature")]
         public async Task<IActionResult> DeleteFeatureFromPropertyAsync(string mls)
         {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(mls);
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
             if (property == null)
             {
                 return NotFound();
