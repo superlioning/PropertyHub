@@ -40,7 +40,7 @@ namespace PropertyHubAPI.Controllers
         public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByStreetAsync(string streetNumber, string streetName, string? unit = null)
         {
             var properties = await _addressRepository.GetPropertiesByStreetAsync(streetNumber, streetName, unit);
-            if (properties == null || !properties.Any())
+            if (!properties.Any())
             {
                 return NotFound();
             }
@@ -54,7 +54,7 @@ namespace PropertyHubAPI.Controllers
         public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByCityAsync(string city)
         {
             var properties = await _addressRepository.GetPropertiesByCityAsync(city);
-            if (properties == null)
+            if (!properties.Any())
             {
                 return NotFound();
             }
@@ -68,7 +68,7 @@ namespace PropertyHubAPI.Controllers
         public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByPostalCodeAsync(string postalCode)
         {
             var properties = await _addressRepository.GetPropertiesByPostalCodeAsync(postalCode);
-            if (properties == null)
+            if (!properties.Any())
             {
                 return NotFound();
             }
@@ -77,7 +77,7 @@ namespace PropertyHubAPI.Controllers
         }
 
         // Add address to the property 
-        [HttpPost("{mls}/address")]
+        [HttpPost("{mls}/addAddress")]
         public async Task<IActionResult> AddAddressToPropertyAsync(string mls, [FromBody] AddressCreateDto addressCreateDto)
         {
             var address = _mapper.Map<Address>(addressCreateDto);
@@ -104,17 +104,21 @@ namespace PropertyHubAPI.Controllers
             var updatedAddress = _mapper.Map<Address>(addressUpdateDto);
 
             // Update the address in the repository
-            var updateResult = await _addressRepository.UpdateAddressInPropertyAsync(mls, updatedAddress);
+            var success = await _addressRepository.UpdateAddressInPropertyAsync(mls, updatedAddress);
 
-            if (updateResult)
-                return Ok("Address updated successfully.");
+            if (success)
+            {
+                return Ok(new { Message = "Address updated successfully." });
+            }
             else
+            {
                 return StatusCode(500, "An error occurred while updating the address.");
+            }
         }
 
         // Patch address
         [HttpPatch("{mls}/patchAddress")]
-        public async Task<IActionResult> PatchAddressInPropertyAsync(string mls, [FromBody] JsonPatchDocument<Address> patchDoc)
+        public async Task<IActionResult> PatchAddressInPropertyAsync(string mls, [FromBody] JsonPatchDocument<AddressUpdateDto> patchDocument)
         {
             var property = await _propertyHubRespository.GetPropertyByIdAsync(mls);
             if (property == null)
@@ -122,26 +126,28 @@ namespace PropertyHubAPI.Controllers
                 return NotFound();
             }
 
-            var addressToPatch = property.Address;
-            if (addressToPatch == null)
+            var addressToPatch = _mapper.Map<AddressUpdateDto>(property.Address);
+
+            patchDocument.ApplyTo(addressToPatch, ModelState);
+
+            if (!TryValidateModel(addressToPatch))
             {
-                return BadRequest("No addresses available to patch.");
+                return ValidationProblem(ModelState);
             }
 
-            // Apply the patch to this address
-            patchDoc.ApplyTo(addressToPatch, ModelState);
+            var patchedAddress = _mapper.Map<Address>(addressToPatch);
 
-            if (!ModelState.IsValid)
+            // Update the address in the repository
+            var success = await _addressRepository.UpdateAddressInPropertyAsync(mls, patchedAddress);
+
+            if (success)
             {
-                return BadRequest(ModelState);
+                return Ok(new { Message = "Address updated successfully." });
             }
-
-            var updateResult = await _addressRepository.UpdateAddressInPropertyAsync(mls, addressToPatch);
-
-            if (updateResult)
-                return Ok(new { Message = "Address patched successfully." });
             else
-                return StatusCode(500, "An error occurred while patching the address.");
+            {
+                return StatusCode(500, "An error occurred while updating the address.");
+            }
         }
 
         // Delete address in the property
@@ -157,7 +163,7 @@ namespace PropertyHubAPI.Controllers
             var success = await _addressRepository.DeleteAddressFromPropertyAsync(mls);
             if (!success)
             {
-                return NotFound($"Cannot delete address from the property ID: {mls}.");
+                return NotFound();
             }
 
             return Ok(new { Message = "Address deleted from property successfully." });

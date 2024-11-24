@@ -70,11 +70,6 @@ namespace PropertyHubAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddAgentAsync([FromBody] AgentCreateDto agentCreateDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var agent = _mapper.Map<Agent>(agentCreateDto);
 
             var success = await _agentRepository.AddAgentAsync(agent);
@@ -84,27 +79,22 @@ namespace PropertyHubAPI.Controllers
                 return StatusCode(500, "An error occurred while adding the agent.");
             }
 
-            return CreatedAtAction(nameof(GetAgentByRegistrationNumberAsync), new { registrationNumber = agent.RegistrationNumber }, agent);
+            return Ok(new { Message = "Agent added successfully." });
         }
 
         // Update agent
         [HttpPut("{registrationNumber}")]
         public async Task<IActionResult> UpdateAgentAsync(string registrationNumber, [FromBody] AgentUpdateDto agentUpdateDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var agent = await _agentRepository.GetAgentByRegistrationNumberAsync(registrationNumber);
             if (agent == null)
             {
-                return NotFound($"Agent with Registration Number {registrationNumber} not found.");
+                return NotFound();
             }
 
-            _mapper.Map(agentUpdateDto, agent);
+            var updatedAgent = _mapper.Map<Agent>(agentUpdateDto);
 
-            var success = await _agentRepository.UpdateAgentAsync(agent);
+            var success = await _agentRepository.UpdateAgentAsync(updatedAgent);
 
             if (!success)
             {
@@ -118,36 +108,33 @@ namespace PropertyHubAPI.Controllers
         [HttpPatch("{registrationNumber}")]
         public async Task<IActionResult> PatchAgentAsync(string registrationNumber, [FromBody] JsonPatchDocument<AgentUpdateDto> patchDocument)
         {
-            if (patchDocument == null)
-            {
-                return BadRequest("Patch document cannot be null.");
-            }
-
             var agent = await _agentRepository.GetAgentByRegistrationNumberAsync(registrationNumber);
             if (agent == null)
             {
-                return NotFound($"Agent with Registration Number {registrationNumber} not found.");
+                return NotFound();
             }
 
             var agentToPatch = _mapper.Map<AgentUpdateDto>(agent);
 
             patchDocument.ApplyTo(agentToPatch, ModelState);
 
-            if (!ModelState.IsValid)
+            if (!TryValidateModel(agentToPatch))
             {
-                return BadRequest(ModelState);
+                return ValidationProblem(ModelState);
             }
 
-            _mapper.Map(agentToPatch, agent);
+            var patchedAgent = _mapper.Map<Agent>(agentToPatch);
 
-            var success = await _agentRepository.UpdateAgentAsync(agent);
+            var success = await _agentRepository.UpdateAgentAsync(patchedAgent);
 
-            if (!success)
+            if (success)
             {
-                return StatusCode(500, "An error occurred while patching the agent.");
+                return Ok(new { Message = "Agent updated successfully." });
             }
-
-            return Ok(new { Message = "Agent patched successfully.", UpdatedAgent = agent });
+            else
+            {
+                return StatusCode(500, "An error occurred while updating the agent.");
+            }
         }
 
         // Delete agent
@@ -158,7 +145,7 @@ namespace PropertyHubAPI.Controllers
 
             if (!success)
             {
-                return NotFound($"Agent with Registration Number {registrationNumber} not found.");
+                return NotFound();
             }
 
             return Ok(new { Message = "Agent deleted successfully." });

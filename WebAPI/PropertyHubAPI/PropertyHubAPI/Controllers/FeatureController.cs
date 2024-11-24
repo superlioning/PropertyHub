@@ -38,7 +38,7 @@ namespace PropertyHubAPI.Controllers
         public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByWalkScoreAsync(int walkScore)
         {
             var properties = await _featureRepository.GetPropertiesByWalkScoreAsync(walkScore);
-            if (properties == null)
+            if (!properties.Any())
             {
                 return NotFound();
             }
@@ -52,7 +52,7 @@ namespace PropertyHubAPI.Controllers
         public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByTransitScoreAsync(int transitScore)
         {
             var properties = await _featureRepository.GetPropertiesByTransitScoreAsync(transitScore);
-            if (properties == null)
+            if (!properties.Any())
             {
                 return NotFound();
             }
@@ -66,7 +66,7 @@ namespace PropertyHubAPI.Controllers
         public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByBikeScoreAsync(int bikeScore)
         {
             var properties = await _featureRepository.GetPropertiesByBikeScoreAsync(bikeScore);
-            if (properties == null)
+            if (!properties.Any())
             {
                 return NotFound();
             }
@@ -80,7 +80,7 @@ namespace PropertyHubAPI.Controllers
         public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByEducationScoreAsync(int educationScore)
         {
             var properties = await _featureRepository.GetPropertiesByEducationScoreAsync(educationScore);
-            if (properties == null)
+            if (!properties.Any())
             {
                 return NotFound();
             }
@@ -90,7 +90,7 @@ namespace PropertyHubAPI.Controllers
         }
 
         // Add feature to the property 
-        [HttpPost("{mls}/feature")]
+        [HttpPost("{mls}/addFeature")]
         public async Task<IActionResult> AddFeatureToPropertyAsync(string mls, [FromBody] FeatureCreateDto featureCreateDto)
         {
             var feature = _mapper.Map<Feature>(featureCreateDto);
@@ -117,17 +117,21 @@ namespace PropertyHubAPI.Controllers
             var updatedFeature = _mapper.Map<Feature>(featureUpdateDto);
 
             // Update the feature in the repository
-            var updateResult = await _featureRepository.UpdateFeatureInPropertyAsync(mls, updatedFeature);
+            var success = await _featureRepository.UpdateFeatureInPropertyAsync(mls, updatedFeature);
 
-            if (updateResult)
-                return Ok("Feature updated successfully.");
+            if (success)
+            {
+                return Ok(new { Message = "Feature updated successfully." });
+            }
             else
+            {
                 return StatusCode(500, "An error occurred while updating the feature.");
+            }
         }
 
         // Patch feature
         [HttpPatch("{mls}/patchFeature")]
-        public async Task<IActionResult> UpdateFeatureInPropertyAsync(string mls, [FromBody] JsonPatchDocument<Feature> patchDoc)
+        public async Task<IActionResult> PatchFeatureInPropertyAsync(string mls, [FromBody] JsonPatchDocument<FeatureUpdateDto> patchDocument)
         {
             var property = await _propertyHubRespository.GetPropertyByIdAsync(mls);
             if (property == null)
@@ -135,25 +139,28 @@ namespace PropertyHubAPI.Controllers
                 return NotFound();
             }
 
-            var featureToPatch = property.Feature;
-            if (featureToPatch == null)
+            var featureToPatch = _mapper.Map<FeatureUpdateDto>(property.Feature);
+
+            patchDocument.ApplyTo(featureToPatch, ModelState);
+
+            if (!TryValidateModel(featureToPatch))
             {
-                return BadRequest("No feature available to patch.");
+                return ValidationProblem(ModelState);
             }
 
-            patchDoc.ApplyTo(featureToPatch, ModelState);
+            var patchedFeature = _mapper.Map<Feature>(featureToPatch);
 
-            if (!ModelState.IsValid)
+            // Update the feature in the repository
+            var success = await _featureRepository.UpdateFeatureInPropertyAsync(mls, patchedFeature);
+
+            if (success)
             {
-                return BadRequest(ModelState);
-            }
-
-            var updateResult = await _featureRepository.UpdateFeatureInPropertyAsync(mls, featureToPatch);
-
-            if (updateResult)
                 return Ok(new { Message = "Feature updated successfully." });
+            }
             else
+            {
                 return StatusCode(500, "An error occurred while updating the feature.");
+            }
         }
 
         // Delete feature in the property
