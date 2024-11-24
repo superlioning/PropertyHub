@@ -14,18 +14,26 @@ namespace PropertyHubLibrary.Connector
         public IAmazonDynamoDB DynamoClient { get; }
         public DynamoDBContext Context { get; }
 
-
         public AWSConnector()
         {
-            var credentials = FetchAWSCredentials();
-            S3Client = new AmazonS3Client(credentials, RegionEndpoint.CACentral1);
-            DynamoClient = new AmazonDynamoDBClient(credentials, RegionEndpoint.CACentral1);
-            Context = new DynamoDBContext(DynamoClient);
-            S3Client = new AmazonS3Client(RegionEndpoint.CACentral1);
-            DynamoClient = new AmazonDynamoDBClient(RegionEndpoint.CACentral1);
-            Context = new DynamoDBContext(DynamoClient);
+            if (IsRunningLocally())
+            {
+                // Load AWS credentials from a configuration file or environment variables
+                var credentials = FetchAWSCredentialsLocally();
+                S3Client = new AmazonS3Client(credentials, RegionEndpoint.CACentral1);
+                DynamoClient = new AmazonDynamoDBClient(credentials, RegionEndpoint.CACentral1);
+                Context = new DynamoDBContext(DynamoClient);
+            }
+            else
+            {
+                // Use instance profile credentials for running on AWS resources
+                S3Client = new AmazonS3Client(RegionEndpoint.CACentral1);
+                DynamoClient = new AmazonDynamoDBClient(RegionEndpoint.CACentral1);
+                Context = new DynamoDBContext(DynamoClient);
+            }
         }
-        private BasicAWSCredentials FetchAWSCredentials()
+
+        private BasicAWSCredentials FetchAWSCredentialsLocally()
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -37,8 +45,14 @@ namespace PropertyHubLibrary.Connector
             return new BasicAWSCredentials(awsAccessKey, awsSecretKey);
         }
 
+        private bool IsRunningLocally()
+        {
+            // Implement logic to determine if the code is running locally
+            // For example, check for environment variables or configuration settings
+            return Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        }
 
-        //Load content of a DynamoDb table.
+        // Load content of a DynamoDb table.
         public Table LoadContentTable(string tableName)
         {
             return Table.LoadTable(DynamoClient, tableName);

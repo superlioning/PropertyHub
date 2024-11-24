@@ -1,6 +1,6 @@
-﻿namespace PropertyHubLibrary.Models
+﻿namespace PropertyHubAPI.DTO.Features
 {
-    public class Feature
+    public class FeatureCreateDto
     {
         public int? WalkScore { get; set; }
         public int? TransitScore { get; set; }

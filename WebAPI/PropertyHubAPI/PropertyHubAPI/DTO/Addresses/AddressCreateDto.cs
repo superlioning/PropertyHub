@@ -1,10 +1,9 @@
-﻿namespace PropertyHubLibrary.Models
+﻿namespace PropertyHubAPI.DTO.Addresses
 {
-    public class Address
+    public class AddressCreateDto
     {
         public required string StreetNumber { get; set; }
         public required string StreetName { get; set; }
-
         public string? Unit { get; set; }
         public required string City { get; set; }
         public required string Province { get; set; }

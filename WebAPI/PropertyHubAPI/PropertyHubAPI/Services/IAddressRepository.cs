@@ -1,17 +1,16 @@
-﻿using PropertyHubAPI.DTO.Addresses;
-using PropertyHubLibrary.Models;
+﻿using PropertyHubLibrary.Models;
 
 namespace PropertyHubAPI.Services
 {
     public interface IAddressRepository
     {
         Task<IEnumerable<Address>> GetAddressesAsync();
-        Task<IEnumerable<Address>> GetAddressByCityAsync(string city);
+        Task<IEnumerable<Property>> GetPropertiesByStreetAsync(string streetNumber, string streetName, string? unit = null);
         Task<IEnumerable<Property>> GetPropertiesByCityAsync(string city);
-        Task<IEnumerable<Property>> GetPropertiesByAreaAsync(string areaCode);
+        Task<IEnumerable<Property>> GetPropertiesByPostalCodeAsync(string postalCode);
 
-        Task<bool> UpdateAddress(string propertyId, Address updatedAddress);
-        Task<bool> AddAddressToPropertyAsync(string propertyId, AddressDto addressDto);
-        Task<bool> DeleteAddressFromPropertyAsync(string propertyId);
+        Task<bool> AddAddressToPropertyAsync(string mls, Address address);
+        Task<bool> UpdateAddressInPropertyAsync(string mls, Address updatedAddress);
+        Task<bool> DeleteAddressFromPropertyAsync(string mls);
     }
 }

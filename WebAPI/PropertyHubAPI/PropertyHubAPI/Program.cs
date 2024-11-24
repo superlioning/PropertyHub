@@ -1,5 +1,5 @@
-using PropertyHubAPI.Connector;
 using PropertyHubAPI.Services;
+using PropertyHubLibrary.Connector;
 
 namespace PropertyHubAPI
 {
@@ -25,7 +25,6 @@ namespace PropertyHubAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddControllers().AddNewtonsoftJson();
-
 
             var app = builder.Build();
 

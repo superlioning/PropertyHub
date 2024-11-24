@@ -2,7 +2,7 @@
 
 namespace PropertyHubAPI.DTO.Agencies
 {
-    public class AgentDto
+    public class AgentCreateDto
     {
         public required string RegistrationNumber { get; set; }
         public required string Name { get; set; }

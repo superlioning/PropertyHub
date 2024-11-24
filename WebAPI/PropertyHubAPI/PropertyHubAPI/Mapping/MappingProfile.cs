@@ -11,27 +11,39 @@ namespace PropertyHubAPI.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<Property, PropertyCreateionDto>();
-            CreateMap<PropertyCreateionDto, Property>();
-            CreateMap<Property, PropertyWithoutOthersAttributeDto>();
+            // Property
+            CreateMap<Property, PropertyDto>();
+            CreateMap<PropertyDto, Property>();
+            CreateMap<Property, PropertyCreateDto>();
+            CreateMap<PropertyCreateDto, Property>();
             CreateMap<Property, PropertyUpdateDto>();
             CreateMap<PropertyUpdateDto, Property>();
-            CreateMap<Property, PropertyDto>();
+            CreateMap<Property, PropertyWithoutOthersAttributeDto>();
+            CreateMap<PropertyWithoutOthersAttributeDto, Property>();
 
-            //Address
+            // Address
             CreateMap<Address, AddressDto>();
             CreateMap<AddressDto, Address>();
+            CreateMap<Address, AddressCreateDto>();
+            CreateMap<AddressCreateDto, Address>();
+            CreateMap<Address, AddressUpdateDto>();
+            CreateMap<AddressUpdateDto, Address>();
 
-            //Agent
+            // Agent
             CreateMap<Agent, AgentDto>();
             CreateMap<AgentDto, Agent>();
-            CreateMap<Agent, AgentCreationDto>();
+            CreateMap<Agent, AgentCreateDto>();
+            CreateMap<AgentCreateDto, Agent>();
             CreateMap<Agent, AgentUpdateDto>();
             CreateMap<AgentUpdateDto, Agent>();
 
-            //Feature
+            // Feature
             CreateMap<Feature, FeatureDto>();
             CreateMap<FeatureDto, Feature>();
+            CreateMap<Feature, FeatureCreateDto>();
+            CreateMap<FeatureCreateDto, Feature>();
+            CreateMap<Feature, FeatureUpdateDto>();
+            CreateMap<FeatureUpdateDto, Feature>();
         }
     }
 }

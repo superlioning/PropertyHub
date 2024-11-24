@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using PropertyHubAPI.DTO.Agencies;
+using PropertyHubAPI.DTO.Property;
 using PropertyHubAPI.Services;
 using PropertyHubLibrary.Models;
 
@@ -22,99 +23,132 @@ namespace PropertyHubAPI.Controllers
             _mapper = mapper;
         }
 
-        //Get all agents
+        // Get all agents
         [HttpGet]
-        public async Task<ActionResult<Agent>> GetAllAgents()
+        public async Task<ActionResult<IEnumerable<AgentDto>>> GetAgentsAsync()
         {
             var agents = await _agentRepository.GetAgentsAsync();
+            if (!agents.Any())
+            {
+                return NotFound("No agents found.");
+            }
+
             var results = _mapper.Map<IEnumerable<AgentDto>>(agents);
             return Ok(results);
         }
 
-        //Get Agent By Id
-        [HttpGet("{agentId}")]
-        public async Task<ActionResult<Agent>> GetAgentById(string agentId)
+        // Get agent by registration number
+        [HttpGet("{registrationNumber}")]
+        public async Task<ActionResult<AgentDto>> GetAgentByRegistrationNumberAsync(string registrationNumber)
         {
-            var agent = await _agentRepository.GetAgentByIdAsync(agentId);
+            var agent = await _agentRepository.GetAgentByRegistrationNumberAsync(registrationNumber);
+            if (agent == null)
+            {
+                return NotFound($"Agent with Registration Number {registrationNumber} not found.");
+            }
+
+            var result = _mapper.Map<AgentDto>(agent);
+            return Ok(result);
+        }
+
+        // Get properties by agent
+        [HttpGet("{registrationNumber}/properties")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByAgentAsync(string registrationNumber)
+        {
+            var properties = await _agentRepository.GetPropertiesByAgentAsync(registrationNumber);
+
+            if (!properties.Any())
+            {
+                return NotFound($"No properties found for Agent {registrationNumber}.");
+            }
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            return Ok(results);
+        }
+
+        // Add agent
+        [HttpPost]
+        public async Task<IActionResult> AddAgentAsync([FromBody] AgentCreateDto agentCreateDto)
+        {
+            var agent = _mapper.Map<Agent>(agentCreateDto);
+
+            var success = await _agentRepository.AddAgentAsync(agent);
+
+            if (!success)
+            {
+                return StatusCode(500, "An error occurred while adding the agent.");
+            }
+
+            return Ok(new { Message = "Agent added successfully." });
+        }
+
+        // Update agent
+        [HttpPut("{registrationNumber}")]
+        public async Task<IActionResult> UpdateAgentAsync(string registrationNumber, [FromBody] AgentUpdateDto agentUpdateDto)
+        {
+            var agent = await _agentRepository.GetAgentByRegistrationNumberAsync(registrationNumber);
             if (agent == null)
             {
                 return NotFound();
             }
-            var results = _mapper.Map<AgentDto>(agent);
-            return Ok(results);
-        }
 
-        //add agent
-        [HttpPost("{propertyId}/agent")]
-        public async Task<IActionResult> AddAgentToProperty(string propertyId, [FromBody] AgentCreationDto agentDto)
-        {
-            var agent = _mapper.Map<AgentCreationDto>(agentDto);
+            var updatedAgent = _mapper.Map<Agent>(agentUpdateDto);
 
-            var success = await _agentRepository.AddAgentToPropertyAsync(propertyId, agent);
+            var success = await _agentRepository.UpdateAgentAsync(updatedAgent);
 
             if (!success)
             {
-                return NotFound($"Property with ID {propertyId} not found.");
-            }
-            return Ok(new { Message = "Agent created successfully.", AgentCreationDto = agentDto });
-        }
-
-        //Update Agent
-        [HttpPut("{propertyId}/updateAgent/{agentId}")]
-        public async Task<IActionResult> UpdateAgent(string propertyId, string agentId, [FromBody] AgentUpdateDto agentUpdateDto)
-        {
-            var agentToUpdate = await _agentRepository.GetAgentByIdAsync(agentId);
-            if (agentToUpdate == null)
-            {
-                return NotFound();
-            }
-
-            _mapper.Map(agentUpdateDto, agentToUpdate);
-
-            var updateResult = await _agentRepository.UpdateAgent(propertyId, agentToUpdate);
-
-            if (updateResult)
-                return Ok("Agent updated successfully.");
-            else
                 return StatusCode(500, "An error occurred while updating the agent.");
+            }
+
+            return Ok(new { Message = "Agent updated successfully." });
         }
 
-        //Patch Agent
-        [HttpPatch("{propertyId}/agents/{agentId}")]
-        public async Task<IActionResult> UpdateAgentPatch(string propertyId, string agentId, [FromBody] JsonPatchDocument<Agent> patchDoc)
+        // Patch agent
+        [HttpPatch("{registrationNumber}")]
+        public async Task<IActionResult> PatchAgentAsync(string registrationNumber, [FromBody] JsonPatchDocument<AgentUpdateDto> patchDocument)
         {
-            var agentToUpdate = await _agentRepository.GetAgentByIdAsync(agentId);
-            if (agentToUpdate == null)
+            var agent = await _agentRepository.GetAgentByRegistrationNumberAsync(registrationNumber);
+            if (agent == null)
             {
                 return NotFound();
             }
 
-            patchDoc.ApplyTo(agentToUpdate, ModelState);
+            var agentToPatch = _mapper.Map<AgentUpdateDto>(agent);
 
-            if (!ModelState.IsValid)
+            patchDocument.ApplyTo(agentToPatch, ModelState);
+
+            if (!TryValidateModel(agentToPatch))
             {
-                return BadRequest(ModelState);
+                return ValidationProblem(ModelState);
             }
-            var updateResult = await _agentRepository.UpdateAgent(propertyId, agentToUpdate);
 
-            if (updateResult)
+            var patchedAgent = _mapper.Map<Agent>(agentToPatch);
+
+            var success = await _agentRepository.UpdateAgentAsync(patchedAgent);
+
+            if (success)
+            {
                 return Ok(new { Message = "Agent updated successfully." });
+            }
             else
+            {
                 return StatusCode(500, "An error occurred while updating the agent.");
+            }
         }
 
-        //Delete agent in the property
-        [HttpDelete("{propertyId}/agent/{agentId}")]
-        public async Task<IActionResult> DeleteAgentFromProperty(string propertyId, string agentId)
+        // Delete agent
+        [HttpDelete("{registrationNumber}")]
+        public async Task<IActionResult> DeleteAgentAsync(string registrationNumber)
         {
-            var success = await _agentRepository.DeleteAgentFromPropertyAsync(propertyId, agentId);
+            var success = await _agentRepository.DeleteAgentAsync(registrationNumber);
 
             if (!success)
             {
-                return NotFound($"Property with ID {propertyId} not found or agent with ID {agentId} not found in the property.");
+                return NotFound();
             }
 
-            return Ok(new { Message = "Agent deleted from property successfully." });
+            return Ok(new { Message = "Agent deleted successfully." });
         }
     }
 }

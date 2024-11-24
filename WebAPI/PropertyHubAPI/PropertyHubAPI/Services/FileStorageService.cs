@@ -1,7 +1,7 @@
 ﻿using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.S3.Transfer;
 using Amazon.S3;
-using PropertyHubAPI.Connector;
+using PropertyHubLibrary.Connector;
 using Amazon.S3.Model;
 
 namespace PropertyHubAPI.Services
@@ -19,33 +19,55 @@ namespace PropertyHubAPI.Services
             _table = _awsConnector.LoadContentTable(_tableName);
         }
 
-        public async Task<IEnumerable<string>> SaveImagesAsync(IEnumerable<IFormFile> propertyImageUrls)
+        public async Task<IEnumerable<string>> AddImagesToPropertyAsync(IEnumerable<IFormFile> imageUrls)
         {
-            var imageUrls = new List<string>();
-            foreach (var image in propertyImageUrls)
-            {
-                if (image.Length > 0)
-                {
-                    var imageUrl = await UploadFileAsync(image);
-                    imageUrls.Add(imageUrl);
+            var uploadedImageUrls = new List<string>();
 
+            try
+            {
+                foreach (var image in imageUrls)
+                {
+                    if (image.Length > 0)
+                    {
+                        var imageUrl = await UploadFileAsync(image);
+                        uploadedImageUrls.Add(imageUrl);
+
+                    }
                 }
+
+                return uploadedImageUrls;
             }
-            return imageUrls;
+            catch (AmazonS3Exception s3Ex)
+            {
+                Console.WriteLine($"Error occurred while uploading images to S3: {s3Ex.Message}");
+                Console.WriteLine(s3Ex.StackTrace);
+                return null;
+            }
         }
 
-        public async Task<string> SaveSingleImageAsync(IFormFile propertyImageUrl)
+        public async Task<string> AddOneImageToPropertyAsync(IFormFile imageUrl)
         {
-            if (propertyImageUrl == null || propertyImageUrl.Length == 0)
+            if (imageUrl == null || imageUrl.Length == 0)
             {
+                Console.WriteLine("No image uploaded");
                 return null;
             }
 
-            var imageUrl = await UploadFileAsync(propertyImageUrl);
-            return imageUrl;
+            try
+            {
+                var uploadedImageUrl = await UploadFileAsync(imageUrl);
+
+                return uploadedImageUrl;
+            }
+            catch (AmazonS3Exception s3Ex)
+            {
+                Console.WriteLine($"Error occurred while uploading image to S3: {s3Ex.Message}");
+                Console.WriteLine(s3Ex.StackTrace);
+                return null;
+            }
         }
 
-        public async Task DeleteImageAsync(string imageUrl)
+        public async Task DeleteOneImageFromPropertyAsync(string imageUrl)
         {
             try
             {
@@ -54,41 +76,55 @@ namespace PropertyHubAPI.Services
             catch (AmazonS3Exception s3Ex)
             {
                 Console.WriteLine($"Error occurred while deleting image from S3: {s3Ex.Message}");
-
-                // Optionally, you can also log the stack trace for more detailed debugging information
                 Console.WriteLine(s3Ex.StackTrace);
             }
         }
 
         public async Task<string> UploadFileAsync(IFormFile file)
         {
-
-            var fileName = Path.GetFileName(file.FileName);
-            var key = fileName;
-            //+ Path.GetExtension(file.FileName);
-            var uploadRequest = new TransferUtilityUploadRequest
+            try
             {
-                InputStream = file.OpenReadStream(),
-                Key = key,
-                BucketName = bucketName,
-                CannedACL = S3CannedACL.PublicRead
-            };
+                var fileName = Path.GetFileName(file.FileName);
+                var key = fileName;
 
-            var fileTransferUtility = new TransferUtility(_awsConnector.S3Client);
-            await fileTransferUtility.UploadAsync(uploadRequest);
-            return $"https://{bucketName}.s3.amazonaws.com/{key}";
+                var uploadRequest = new TransferUtilityUploadRequest
+                {
+                    InputStream = file.OpenReadStream(),
+                    Key = key,
+                    BucketName = bucketName,
+                    CannedACL = S3CannedACL.PublicRead
+                };
+
+                var fileTransferUtility = new TransferUtility(_awsConnector.S3Client);
+                await fileTransferUtility.UploadAsync(uploadRequest);
+
+                return $"https://{bucketName}.s3.amazonaws.com/{key}";
+            }
+            catch (AmazonS3Exception s3Ex)
+            {
+                Console.WriteLine($"Amazon S3 error: {s3Ex.Message}");
+                return $"Error uploading file: {s3Ex.Message}";
+            }
         }
 
         public async Task DeleteFileFromS3Async(string fileUrl)
         {
-            var key = Path.GetFileName(new Uri(fileUrl).AbsolutePath);
-            var deleteObjectRequest = new DeleteObjectRequest
+            try
             {
-                BucketName = bucketName,
-                Key = key
-            };
+                var key = Path.GetFileName(new Uri(fileUrl).AbsolutePath);
+                var deleteObjectRequest = new DeleteObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = key
+                };
 
-            await _awsConnector.S3Client.DeleteObjectAsync(deleteObjectRequest);
+                await _awsConnector.S3Client.DeleteObjectAsync(deleteObjectRequest);
+            }
+            catch (AmazonS3Exception s3Ex)
+            {
+                Console.WriteLine($"Amazon S3 error: {s3Ex.Message}");
+                throw new Exception($"Error deleting file from S3: {s3Ex.Message}");
+            }
         }
     }
 }
