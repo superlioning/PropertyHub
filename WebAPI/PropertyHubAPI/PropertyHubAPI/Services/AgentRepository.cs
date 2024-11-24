@@ -1,7 +1,6 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
-using PropertyHubAPI.Connector;
-using PropertyHubAPI.DTO.Agencies;
+using PropertyHubLibrary.Connector;
 using PropertyHubLibrary.Models;
 
 namespace PropertyHubAPI.Services
@@ -9,7 +8,7 @@ namespace PropertyHubAPI.Services
     public class AgentRepository : IAgentRepository
     {
         private readonly AWSConnector _awsConnector;
-        private readonly string _tableName = "Property";
+        private readonly string _tableName = "Agent";
         private readonly Table _table;
 
         public AgentRepository(AWSConnector awsConnector)
@@ -17,143 +16,93 @@ namespace PropertyHubAPI.Services
             _awsConnector = awsConnector;
             _table = _awsConnector.LoadContentTable(_tableName);
         }
+
         public async Task<IEnumerable<Agent>> GetAgentsAsync()
         {
             DynamoDBContext context = _awsConnector.Context;
 
-            // Perform a scan operation to retrieve the Property items
-            var properties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
-
-            // Extract the Agent attribute from each Property item
-            var agents = properties
-             .Where(property => property.Agents != null)
-             .Select(property => property.Agents)
-            .ToList();
-
+            var agents = await context.ScanAsync<Agent>(new List<ScanCondition>()).GetRemainingAsync();
             return agents;
         }
-        public async Task<Agent> GetAgentByIdAsync(string agentId)
+
+        public async Task<Agent> GetAgentByRegistrationNumberAsync(string registrationNumber)
         {
             DynamoDBContext context = _awsConnector.Context;
 
-            // Perform a scan operation to retrieve the Property items
-            var properties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
-
-            // Extract the Agent attribute from each Property item
-            var agents = properties
-                .Where(property => property.Agents != null)
-                .Select(property => property.Agents)
-                .ToList();
-
-            // Find the agent by AgentId
-            var agent = agents.FirstOrDefault(c => c.AgentId == agentId);
-
+            var agent = await context.LoadAsync<Agent>(registrationNumber);
             return agent;
         }
-        public async Task<bool> AddAgentToPropertyAsync(string propertyId, AgentCreateDto agentDto)
+
+        public async Task<IEnumerable<Property>> GetPropertiesByAgentAsync(string registrationNumber)
         {
             DynamoDBContext context = _awsConnector.Context;
-            var property = await context.LoadAsync<Property>(propertyId);
-            if (property == null) return false;
 
-            if (property.Agents == null)
+            var conditions = new List<ScanCondition>
             {
-                property.Agents = new Agent();
-            }
-
-
-            var newAgent = new Agent
-            {
-                AgentId = Guid.NewGuid().ToString(),
-                AgentName = agentDto.AgentName,
-                AgentCompanyName = agentDto.AgentCompanyName,
-                AgentPhone = agentDto.AgentPhone
+                new ScanCondition("AgentRegistrationNumber", ScanOperator.Equal, registrationNumber)
             };
 
-            property.Agents = newAgent;
-
-            try
-            {
-                await context.SaveAsync(property);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
         }
 
-        public async Task<bool> UpdateAgent(string propertyId, Agent updatedAgent)
-        {
-            try
-            {
-                DynamoDBContext context = _awsConnector.Context;
-                Property property = await context.LoadAsync<Property>(propertyId);
-                if (property == null) return false;
-
-                // Check if Agents dictionary is initialized
-                if (property.Agents == null)
-                {
-                    property.Agents = new Agent();
-                }
-
-                // Check if the agent exists
-                if (property.Agents != null)
-                {
-                    // Update the existing agent
-                    property.Agents = updatedAgent;
-                }
-                else
-                {
-                    // Add the new agent to the dictionary
-                    property.Agents = updatedAgent;
-                }
-
-                // Save the updated property item
-                await context.SaveAsync(property);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error occurred while updating agent: {ex.Message}");
-                return false;
-            }
-        }
-
-        public async Task<bool> DeleteAgentFromPropertyAsync(string propertyId, string agentId)
+        public async Task<bool> AddAgentAsync(Agent agent)
         {
             DynamoDBContext context = _awsConnector.Context;
 
-            // Retrieve the property by PropertyId
-            var property = await context.LoadAsync<Property>(propertyId);
-
-            if (property == null || property.Agents == null)
+            try
             {
-                return false; // Property not found or has no agents
+                await context.SaveAsync(agent);
+                return true;
             }
-
-            // Check if the agent exists in the property's agents
-            if (property.Agents.AgentId == agentId)
+            catch (Exception ex)
             {
-                // Remove the agent reference from the property
-                property.Agents = null;
-
-
-                try
-                {
-                    // Save the updated property
-                    await context.SaveAsync(property);
-                    return true; // Deletion successful
-                }
-                catch (Exception ex)
-                {
-                    return false; // Deletion failed
-                }
+                Console.WriteLine($"Error adding agent: {ex.Message}");
+                return false;
             }
-            else
+        }
+
+        public async Task<bool> UpdateAgentAsync(Agent updatedAgent)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            try
             {
-                return false; // Agent not found in property
+                var existingAgent = await context.LoadAsync<Agent>(updatedAgent.RegistrationNumber);
+                if (existingAgent == null)
+                {
+                    return false;
+                }
+
+                await context.SaveAsync(updatedAgent);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating agent: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAgentAsync(string registrationNumber)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            try
+            {
+                var agent = await context.LoadAsync<Agent>(registrationNumber);
+                if (agent == null)
+                {
+                    return false;
+                }
+
+                await context.DeleteAsync(agent);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting agent: {ex.Message}");
+                return false;
             }
         }
     }
