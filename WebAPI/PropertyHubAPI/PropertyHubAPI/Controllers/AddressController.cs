@@ -27,7 +27,7 @@ namespace PropertyHubAPI.Controllers
 
         // Get all addresses
         [HttpGet]
-        public async Task<ActionResult<Address>> GetAllAddresses()
+        public async Task<ActionResult<IEnumerable<AddressDto>>> GetAddressesAsync()
         {
             var addresses = await _addressRepository.GetAddressesAsync();
 
@@ -37,7 +37,7 @@ namespace PropertyHubAPI.Controllers
 
         // Get all properties in the street
         [HttpGet("streetProperty/{streetNumber}/{streetName}/{unit?}")]
-        public async Task<ActionResult<Property>> GetPropertiesByStreetAsync(string streetNumber, string streetName, string? unit = null)
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByStreetAsync(string streetNumber, string streetName, string? unit = null)
         {
             var properties = await _addressRepository.GetPropertiesByStreetAsync(streetNumber, streetName, unit);
             if (properties == null || !properties.Any())
@@ -51,7 +51,7 @@ namespace PropertyHubAPI.Controllers
 
         // Get all properties in the city
         [HttpGet("cityProperty/{city}")]
-        public async Task<ActionResult<Property>> GetPropertyByCityAsync(string city)
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByCityAsync(string city)
         {
             var properties = await _addressRepository.GetPropertiesByCityAsync(city);
             if (properties == null)
@@ -65,7 +65,7 @@ namespace PropertyHubAPI.Controllers
 
         // Get all properties in the postalCode
         [HttpGet("postalCodeProperty/{postalCode}")]
-        public async Task<ActionResult<Property>> GetPropertiesByPostalCodeAsync(string postalCode)
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByPostalCodeAsync(string postalCode)
         {
             var properties = await _addressRepository.GetPropertiesByPostalCodeAsync(postalCode);
             if (properties == null)

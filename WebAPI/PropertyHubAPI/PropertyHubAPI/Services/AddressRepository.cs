@@ -131,9 +131,7 @@ namespace PropertyHubAPI.Services
                 }
                 else
                 {
-
                     property.Address = updatedAddress;
-
                 }
 
                 await context.SaveAsync(property);
