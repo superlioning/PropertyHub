@@ -1,8 +1,7 @@
-﻿using Amazon.DynamoDBv2.DocumentModel;
-using PropertyHubAPI.Connector;
+﻿using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
+using PropertyHubLibrary.Connector;
 using PropertyHubLibrary.Models;
-using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2;
 
 namespace PropertyHubAPI.Services
 {
@@ -17,108 +16,169 @@ namespace PropertyHubAPI.Services
             _awsConnector = awsConnector;
             _table = _awsConnector.LoadContentTable(_tableName);
         }
+
         public async Task<IEnumerable<Property>> GetPropertiesAsync()
         {
             DynamoDBContext context = _awsConnector.Context;
+
             var properties = await context.ScanAsync<Property>(new List<ScanCondition>()).GetRemainingAsync();
             return properties;
         }
 
-        public async Task<Property> GetPropertyByIdAsync(string propertyId)
+        public async Task<Property> GetPropertyByMLSAsync(string mls)
         {
             DynamoDBContext context = _awsConnector.Context;
-            var property = await context.LoadAsync<Property>(propertyId);
+
+            var property = await context.LoadAsync<Property>(mls);
             return property;
         }
-        public async Task<Property> GetPropertyByNameAsync(string propertyName)
-        {
-            DynamoDBContext context = _awsConnector.Context;
-            var conditions = new List<ScanCondition>
-            {
-                new ScanCondition("PropertyName", ScanOperator.Equal, propertyName)
-            };
-            var search = context.ScanAsync<Property>(conditions);
-            var properties = await search.GetRemainingAsync();
-            return properties.FirstOrDefault();
-        }
 
-        public async Task<IEnumerable<Property>> GetPropertyByTypeAsync(string propertyType)
+        public async Task<IEnumerable<Property>> GetPropertiesByTypeAsync(string type)
         {
             DynamoDBContext context = _awsConnector.Context;
+
             var conditions = new List<ScanCondition>
                 {
-                    new ScanCondition("PropertyType", ScanOperator.Equal, propertyType)
+                    new ScanCondition("Type", ScanOperator.Equal, type)
                 };
 
-            var searchResults = await context.ScanAsync<Property>(conditions, new DynamoDBOperationConfig
-            {
-                IndexName = "PropertyType-index", // GSI name 
-            }).GetRemainingAsync();
-
-            return searchResults.ToList();
-        }
-
-        public async Task<IEnumerable<Property>> GetPropertyByPriceRangeAsync(decimal minPrice, decimal maxPrice)
-        {
-            DynamoDBContext context = _awsConnector.Context;
-            var conditions = new List<ScanCondition>
-                {
-                    new ScanCondition("Price", ScanOperator.Between, minPrice, maxPrice)
-                };
-
-            var searchResults = await context.ScanAsync<Property>(conditions, new DynamoDBOperationConfig
-            {
-                IndexName = "Price-index", // GSI name
-            }).GetRemainingAsync();
-
-            return searchResults.ToList();
-        }
-
-        public async Task<IEnumerable<Property>> GetPropertyByStatusAsync(string status)
-        {
-            DynamoDBContext context = _awsConnector.Context;
-            var conditions = new List<ScanCondition>
-            {
-                new ScanCondition("Status", ScanOperator.Equal, status)
-            };
-            var search = context.ScanAsync<Property>(conditions);
-            var properties = await search.GetRemainingAsync();
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
             return properties;
         }
 
-        public async Task<Property> AddProperty(Property property)
+        public async Task<IEnumerable<Property>> GetPropertiesByPriceLimitAsync(decimal price)
         {
-            DateTime currentDate = DateTime.Now;
-            string formattedDate = currentDate.ToString("yyyy-MM-dd");
+            DynamoDBContext context = _awsConnector.Context;
 
-            property.PropertyId = Guid.NewGuid().ToString("N");
-            property.LastUpdate = formattedDate;
-            property.DateListed = formattedDate;
+            var conditions = new List<ScanCondition>
+                {
+                    new ScanCondition("Price", ScanOperator.LessThanOrEqual, price)
+                };
 
-            var document = new Document();
-            document["PropertyId"] = property.PropertyId;
-            document["PropertyName"] = property.PropertyName;
-            document["PropertyDesc"] = property.PropertyDesc;
-            document["PropertyTax"] = property.PropertyTax;
-            document["LastUpdate"] = property.LastUpdate;
-            document["DateListed"] = property.DateListed;
-            document["Price"] = property.Price;
-            document["Status"] = property.Status;
-            document["PropertyType"] = property.PropertyType;
-
-            await _table.PutItemAsync(document);
-            return property;
-
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
         }
 
-        //update
-        public async Task<bool> UpdateProperty(Property property)
+        public async Task<IEnumerable<Property>> GetPropertiesByBedroomsLimitAsync(int bedrooms)
         {
+            DynamoDBContext context = _awsConnector.Context;
+
+            var conditions = new List<ScanCondition>
+                {
+                    new ScanCondition("Bedrooms", ScanOperator.GreaterThanOrEqual, bedrooms)
+                };
+
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
+        }
+
+        public async Task<IEnumerable<Property>> GetPropertiesByBathroomsLimitAsync(int bathrooms)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            var conditions = new List<ScanCondition>
+                {
+                    new ScanCondition("Bathrooms", ScanOperator.GreaterThanOrEqual, bathrooms)
+                };
+
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
+        }
+
+        public async Task<IEnumerable<Property>> GetPropertiesByParkingsLimitAsync(int parkings)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            var conditions = new List<ScanCondition>
+                {
+                    new ScanCondition("Parkings", ScanOperator.GreaterThanOrEqual, parkings)
+                };
+
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
+        }
+
+        public async Task<IEnumerable<Property>> GetPropertiesBySizeLimitAsync(int size)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            var conditions = new List<ScanCondition>
+                {
+                    new ScanCondition("Size", ScanOperator.GreaterThanOrEqual, size)
+                };
+
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
+        }
+
+        public async Task<IEnumerable<Property>> GetPropertiesByYearBuiltLimitAsync(int yearBuilt)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            var conditions = new List<ScanCondition>
+                {
+                    new ScanCondition("YearBuilt", ScanOperator.LessThanOrEqual, yearBuilt)
+                };
+
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
+        }
+
+        public async Task<IEnumerable<Property>> GetPropertiesByTaxLimitAsync(decimal tax)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            var conditions = new List<ScanCondition>
+                {
+                    new ScanCondition("Tax", ScanOperator.LessThanOrEqual, tax)
+                };
+
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
+        }
+
+        public async Task<IEnumerable<Property>> GetPropertiesByStatusAsync(string status)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            var conditions = new List<ScanCondition>
+                {
+                    new ScanCondition("Status", ScanOperator.Equal, status)
+                };
+
+            var properties = await context.ScanAsync<Property>(conditions).GetRemainingAsync();
+            return properties;
+        }
+
+        public async Task<bool> AddPropertyAsync(Property property)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
             try
             {
-                DynamoDBContext context = _awsConnector.Context;
                 await context.SaveAsync(property);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error occurred while adding property: {ex.Message}");
+                return false;
+            }
+        }
 
+        public async Task<bool> UpdatePropertyAsync(Property updatedProperty)
+        {
+            DynamoDBContext context = _awsConnector.Context;
+
+            try
+            {
+                var existingProperty = await context.LoadAsync<Property>(updatedProperty.MLS);
+                if (existingProperty == null)
+                {
+                    return false;
+                }
+
+                await context.SaveAsync(updatedProperty);
                 return true;
             }
             catch (Exception ex)
@@ -128,26 +188,26 @@ namespace PropertyHubAPI.Services
             }
         }
 
-        //Delete Property
-        public async Task<bool> DeletePropertyAsync(string propertyId)
+        public async Task<bool> DeletePropertyAsync(string mls)
         {
             DynamoDBContext context = _awsConnector.Context;
+
             try
             {
-                await context.DeleteAsync<Property>(propertyId);
-                return true; // Deletion successful
-            }
-            catch (AmazonDynamoDBException dbEx)
-            {
-                return false; // Deletion failed due to a DynamoDB exception
-                throw new Exception($"DynamoDB error: {dbEx.ErrorCode} - {dbEx.Message}", dbEx);
+                var property = await context.LoadAsync<Property>(mls);
+                if (property == null)
+                {
+                    return false;
+                }
+
+                await context.DeleteAsync(property);
+                return true;
             }
             catch (Exception ex)
             {
-                return false; // Deletion failed due to a general exception
-                throw new Exception($"General error: {ex.Message}", ex);
+                Console.WriteLine($"Error occurred while deleting property: {ex.Message}");
+                return false;
             }
         }
-
     }
 }

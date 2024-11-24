@@ -22,159 +22,285 @@ namespace PropertyHubAPI.Controllers
             _mapper = mapper;
         }
 
+        // Get all properties
         [HttpGet]
-        public async Task<ActionResult<Property>> GetAllProperties()
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesAsync()
         {
             var properties = await _propertyHubRespository.GetPropertiesAsync();
+            if (!properties.Any())
+            {
+                return NotFound();
+            }
+
             var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
             return Ok(results);
         }
 
-        [HttpGet("{propertyId}")]
-        public async Task<ActionResult<Property>> GetPropertyById(string propertyId)
+        // Get property by MLS
+        [HttpGet("{mls}")]
+        public async Task<ActionResult<PropertyDto>> GetPropertyByMLSAsync(string mls)
         {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
             if (property == null)
             {
-                return NotFound();
+                return NotFound($"Property with MLS {mls} not found.");
             }
+
             var results = _mapper.Map<PropertyDto>(property);
             return Ok(results);
         }
 
-
-        [HttpGet("propertiesType/{propertyType}")]
-        public async Task<ActionResult<IEnumerable<Property>>> GetPropertyByTypeAsync(string propertyType)
+        // Get properties by type
+        [HttpGet("type/{type}")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByTypeAsync(string type)
         {
-            var properties = await _propertyHubRespository.GetPropertyByTypeAsync(propertyType);
-            if (properties == null || !properties.Any())
-            {
-                return NotFound();
-            }
-            var results = _mapper.Map<IEnumerable<PropertyWithoutOthersAttributeDto>>(properties);
-            return Ok(results);
-        }
-
-        [HttpGet("price-range/{minPrice}/{maxPrice}")]
-        public async Task<ActionResult<IEnumerable<Property>>> GetPropertiesByPriceRange(decimal minPrice, decimal maxPrice)
-        {
-            var properties = await _propertyHubRespository.GetPropertyByPriceRangeAsync(minPrice, maxPrice);
-
-            // Check if the returned collection is empty, not just null
-            if (properties == null || !properties.Any())
+            var properties = await _propertyHubRespository.GetPropertiesByTypeAsync(type);
+            if (!properties.Any())
             {
                 return NotFound();
             }
 
-            var results = _mapper.Map<IEnumerable<PropertyWithoutOthersAttributeDto>>(properties);
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
             return Ok(results);
         }
 
+        // Get properties by price limit
+        [HttpGet("price/{price}")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByPriceLimitAsync(decimal price)
+        {
+            var properties = await _propertyHubRespository.GetPropertiesByPriceLimitAsync(price);
+            if (!properties.Any())
+            {
+                return NotFound();
+            }
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            return Ok(results);
+        }
+
+        // Get properties by bedrooms limit
+        [HttpGet("bedrooms/{bedrooms}")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByBedroomsLimitAsync(int bedrooms)
+        {
+            var properties = await _propertyHubRespository.GetPropertiesByBedroomsLimitAsync(bedrooms);
+            if (!properties.Any())
+            {
+                return NotFound();
+            }
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            return Ok(results);
+        }
+
+        // Get properties by bathrooms limit
+        [HttpGet("bathrooms/{bathrooms}")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByBathroomsLimitAsync(int bathrooms)
+        {
+            var properties = await _propertyHubRespository.GetPropertiesByBathroomsLimitAsync(bathrooms);
+            if (!properties.Any())
+            {
+                return NotFound();
+            }
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            return Ok(results);
+        }
+
+        // Get properties by parkings limit
+        [HttpGet("parkings/{parkings}")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByParkingsLimitAsync(int parkings)
+        {
+            var properties = await _propertyHubRespository.GetPropertiesByParkingsLimitAsync(parkings);
+            if (!properties.Any())
+            {
+                return NotFound();
+            }
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            return Ok(results);
+        }
+
+        // Get properties by size limit
+        [HttpGet("size/{size}")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesBySizeLimitAsync(int size)
+        {
+            var properties = await _propertyHubRespository.GetPropertiesBySizeLimitAsync(size);
+            if (!properties.Any())
+            {
+                return NotFound();
+            }
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            return Ok(results);
+        }
+
+        // Get properties by year built limit
+        [HttpGet("yearBuilt/{yearBuilt}")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByYearBuiltLimitAsync(int yearBuilt)
+        {
+            var properties = await _propertyHubRespository.GetPropertiesByYearBuiltLimitAsync(yearBuilt);
+            if (!properties.Any())
+            {
+                return NotFound();
+            }
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            return Ok(results);
+        }
+
+        // Get properties by tax limit
+        [HttpGet("tax/{tax}")]
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByTaxLimitAsync(decimal tax)
+        {
+            var properties = await _propertyHubRespository.GetPropertiesByTaxLimitAsync(tax);
+            if (!properties.Any())
+            {
+                return NotFound();
+            }
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
+            return Ok(results);
+        }
+
+        // Get properties by status
         [HttpGet("status/{status}")]
-        public async Task<ActionResult<Property>> GetPropertyByStatus(string status)
+        public async Task<ActionResult<IEnumerable<PropertyDto>>> GetPropertiesByStatusAsync(string status)
         {
-            var properties = await _propertyHubRespository.GetPropertyByStatusAsync(status);
-            if (properties == null)
+            var properties = await _propertyHubRespository.GetPropertiesByStatusAsync(status);
+            if (!properties.Any())
             {
                 return NotFound();
             }
-            var results = _mapper.Map<IEnumerable<PropertyWithoutOthersAttributeDto>>(properties);
+
+            var results = _mapper.Map<IEnumerable<PropertyDto>>(properties);
             return Ok(results);
         }
 
-
+        // Add property
         [HttpPost]
-        public async Task<IActionResult> CreateProperty([FromBody] PropertyCreateDto propertyDto)
+        public async Task<IActionResult> AddPropertyAsync([FromBody] PropertyCreateDto propertyCreateDto)
         {
-            if (propertyDto == null)
-            {
-                return BadRequest("Property data is required.");
-            }
+            var property = _mapper.Map<Property>(propertyCreateDto);
 
-            try
-            {
-                // Use AutoMapper to map DTO to Entity
-                var property = _mapper.Map<Property>(propertyDto);
+            var success = await _propertyHubRespository.AddPropertyAsync(property);
 
-                // Add the property using the repository
-                var createdProperty = await _propertyHubRespository.AddProperty(property);
-
-                return Ok(new { Message = "Property created successfully.", Property = createdProperty });
-            }
-            catch (Exception ex)
+            if (!success)
             {
                 return StatusCode(500, "An error occurred while creating the property.");
             }
 
+            return Ok(new { Message = "Property added successfully." });
         }
 
-        //Add New Images to the Existing Property
-        [HttpPost("{propertyId}/images")]
-        public async Task<IActionResult> UploadImages(string propertyId, [FromForm] IEnumerable<IFormFile> propertyImageUrls)
+        // Update property
+        [HttpPut("{mls}")]
+        public async Task<IActionResult> UpdatePropertyAsync(string mls, [FromBody] PropertyUpdateDto propertyUpdateDto)
         {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
             if (property == null)
             {
                 return NotFound();
             }
 
-            if (propertyImageUrls == null || !propertyImageUrls.Any())
+            var updatedProperty = _mapper.Map<Property>(propertyUpdateDto);
+
+            var success = await _propertyHubRespository.UpdatePropertyAsync(property);
+
+            if (!success)
             {
-                return BadRequest("No files were selected for upload.");
-            }
-            try
-            {
-                // Use AutoMapper to map DTO to Entity
-                //var property = _mapper.Map<Property>(propertyDto);
-
-                //// Add the property using the repository
-                //var createdProperty = await _propertyHubRespository.AddProperty(property, PropertyImageUrls);
-                var imageUrls = await _fileStorageService.SaveImagesAsync(propertyImageUrls);
-
-                // Update property with new image URLs
-                property.PropertyImageUrls = (List<string>?)imageUrls; // This can be an append or replace operation, depending on your logic
-
-                var updateResult = await _propertyHubRespository.UpdateProperty(property);
-                if (!updateResult)
-                {
-                    return StatusCode(500, "Error updating property images in the database.");
-                }
-
-                return Ok(new { Message = "Property created successfully.", Property = property });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An error occurred while creating the property.");
+                return StatusCode(500, "An error occurred while updating the property.");
             }
 
+            return Ok(new { Message = "Property updated successfully." });
         }
 
-        //Update exisiting property 
-        [HttpPut("{propertyId}")]
-        public async Task<IActionResult> UpdateProperty(string propertyId, [FromBody] PropertyUpdateDto propertyUpdateDto)
+        // Patch property
+        [HttpPatch("{mls}")]
+        public async Task<IActionResult> PatchPropertyAsync(string mls, [FromBody] JsonPatchDocument<PropertyUpdateDto> patchDocument)
         {
-            var propertyToUpdate = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
-            if (propertyToUpdate == null)
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
+            if (property == null)
             {
                 return NotFound();
             }
 
-            _mapper.Map(propertyUpdateDto, propertyToUpdate);// Map the updated values
+            var propertyToPatch = _mapper.Map<PropertyUpdateDto>(property);
 
-            var updateResult = await _propertyHubRespository.UpdateProperty(propertyToUpdate);
+            patchDocument.ApplyTo(propertyToPatch, ModelState);
 
-            if (updateResult)
-                return NoContent(); // Indicate success with NoContent (204)
-            else
+            if (!TryValidateModel(propertyToPatch))
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var patchedProperty = _mapper.Map<Property>(propertyToPatch);
+
+            var success = await _propertyHubRespository.UpdatePropertyAsync(patchedProperty);
+
+            if (!success)
+            {
                 return StatusCode(500, "An error occurred while updating the property.");
+            }
+
+            return Ok(new { Message = "Property updated successfully." });
         }
 
-        //replace the specific propertyImageUrl
-        [HttpPut("{propertyId}/imageReplace")]
-        public async Task<IActionResult> ReplacePropertyImage(string propertyId, string existingImageUrl, IFormFile newImage)
+        // Delete property 
+        [HttpDelete("{mls}")]
+        public async Task<IActionResult> DeletePropertyAsync(string mls)
+        {
+            var success = await _propertyHubRespository.DeletePropertyAsync(mls);
+
+            if (!success)
+            {
+                return StatusCode(500, "An error occurred while deleting the property.");
+            }
+
+            return Ok(new { Message = "Property deleted successfully." });
+        }
+
+        // Add New Images to the Existing Property
+        [HttpPost("{mls}/images")]
+        public async Task<IActionResult> AddPropertyImagesAsync(string mls, [FromForm] IEnumerable<IFormFile> imageUrls)
+        {
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
+            if (property == null)
+            {
+                return NotFound();
+            }
+
+            if (!imageUrls.Any())
+            {
+                return BadRequest("No files were selected for upload.");
+            }
+
+            try
+            {
+                var uploadedImageUrls = await _fileStorageService.AddImagesToPropertyAsync(imageUrls);
+
+                // Ensure that the uploaded image URLs are properly assigned to the property
+                property.ImageUrls.AddRange(uploadedImageUrls);
+
+                var success = await _propertyHubRespository.UpdatePropertyAsync(property);
+                if (!success)
+                {
+                    return StatusCode(500, "Error updating property images in the database.");
+                }
+
+                return Ok(new { Message = "Property images added successfully.", Property = property });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while adding property images.");
+            }
+        }
+
+        // Update property images
+        [HttpPut("{mls}/images")]
+        public async Task<IActionResult> UpdatePropertyImageAsync(string mls, string existingImageUrl, IFormFile newImage)
         {
             // Validate property exists
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
             if (property == null)
             {
                 return NotFound();
@@ -195,13 +321,13 @@ namespace PropertyHubAPI.Controllers
             try
             {
                 // Save the new image file and get its URL
-                var newImageUrl = await _fileStorageService.SaveSingleImageAsync(newImage);
+                var newImageUrl = await _fileStorageService.AddOneImageToPropertyAsync(newImage);
 
                 // Find the existing image in the property's image list and replace it
-                var imageIndex = property.PropertyImageUrls.IndexOf(existingImageUrl);
+                var imageIndex = property.ImageUrls.IndexOf(existingImageUrl);
                 if (imageIndex != -1)
                 {
-                    property.PropertyImageUrls[imageIndex] = newImageUrl;
+                    property.ImageUrls[imageIndex] = newImageUrl;
                 }
                 else
                 {
@@ -209,8 +335,8 @@ namespace PropertyHubAPI.Controllers
                 }
 
                 // Update the property in the repository
-                var updateResult = await _propertyHubRespository.UpdateProperty(property);
-                if (!updateResult)
+                var success = await _propertyHubRespository.UpdatePropertyAsync(property);
+                if (!success)
                 {
                     return StatusCode(500, "Error updating the property image in the database.");
                 }
@@ -224,43 +350,14 @@ namespace PropertyHubAPI.Controllers
             }
         }
 
-
-        //Patch
-        [HttpPatch("{propertyId}")]
-        public async Task<IActionResult> UpdatePropertyPatch(string propertyId, [FromBody] JsonPatchDocument<Property> patchDoc)
+        //Delete property images
+        [HttpDelete("{mls}/images")]
+        public async Task<IActionResult> DeletePropertyImagesAsync(string mls, [FromBody] IEnumerable<string> imageUrls)
         {
-            var propertyToUpdate = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
-            if (propertyToUpdate == null)
-            {
-                return NotFound();
-            }
-
-            // Apply the patch document to the property entity
-            patchDoc.ApplyTo(propertyToUpdate, ModelState);
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            // Update the property in the repository
-            var updateResult = await _propertyHubRespository.UpdateProperty(propertyToUpdate);
-
-            if (updateResult)
-                return Ok(new { Message = "Property updated successfully." });
-            else
-                return StatusCode(500, "An error occurred while updating the property.");
-        }
-
-
-        //Delete image
-        [HttpDelete("{propertyId}/images")]
-        public async Task<IActionResult> DeleteImage(string propertyId, [FromBody] IEnumerable<string> imageUrls)
-        {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
             if (property == null)
             {
-                return NotFound($"Property with ID {propertyId} not found.");
+                return NotFound();
             }
 
             if (imageUrls == null || !imageUrls.Any())
@@ -268,7 +365,7 @@ namespace PropertyHubAPI.Controllers
                 return BadRequest("No image URLs provided.");
             }
 
-            var imagesToRemove = property.PropertyImageUrls.Where(url => imageUrls.Contains(url)).ToList();
+            var imagesToRemove = property.ImageUrls.Where(url => imageUrls.Contains(url)).ToList();
             if (!imagesToRemove.Any())
             {
                 return BadRequest("None of the provided image URLs match the property's images.");
@@ -277,53 +374,19 @@ namespace PropertyHubAPI.Controllers
             foreach (var imageUrl in imagesToRemove)
             {
                 // Logic to delete the image from storage
-                await _fileStorageService.DeleteImageAsync(imageUrl);
+                await _fileStorageService.DeleteOneImageFromPropertyAsync(imageUrl);
 
                 // Remove the image URL from the property's image list
-                property.PropertyImageUrls.Remove(imageUrl);
+                property.ImageUrls.Remove(imageUrl);
             }
 
-            var updateResult = await _propertyHubRespository.UpdateProperty(property);
-            if (!updateResult)
+            var success = await _propertyHubRespository.UpdatePropertyAsync(property);
+            if (!success)
             {
                 return StatusCode(500, "An error occurred while updating the property.");
             }
 
-            return Ok($"Images successfully deleted from property {propertyId}.");
-        }
-
-
-        //Delete property 
-        [HttpDelete("{propertyId}")]
-        public async Task<IActionResult> DeleteProperty(string propertyId)
-        {
-            var property = await _propertyHubRespository.GetPropertyByIdAsync(propertyId);
-            if (property == null)
-            {
-                return NotFound($"Property with ID {propertyId} not found.");
-            }
-
-
-            if (property.PropertyImageUrls != null)
-            {
-                //Delete related data, such as images
-                foreach (var imageUrl in property.PropertyImageUrls)
-                {
-                    await _fileStorageService.DeleteImageAsync(imageUrl);
-                }
-            }
-
-            // Delete the property from the database
-            bool deletionResult = await _propertyHubRespository.DeletePropertyAsync(propertyId);
-
-            if (deletionResult)
-            {
-                return Ok($"Property with ID {propertyId} has been successfully deleted.");
-            }
-            else
-            {
-                return NotFound($"Property with ID {propertyId} not found.");
-            }
+            return Ok($"Images successfully deleted from property {mls}.");
         }
     }
 }
