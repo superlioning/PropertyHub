@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { addAgent } from '../services/agentService';
 import { AgentCreateDto } from '../models/AgentCreateDto';
 import { AddressCreateDto } from '../models/AddressCreateDto';
+import { sectionStyle } from '../styles/styles';
 
 const AgentAdd: React.FC = () => {
     const [agent, setAgent] = useState<AgentCreateDto>({
@@ -68,14 +69,6 @@ const AgentAdd: React.FC = () => {
                 country: ''
             }
         });
-    };
-
-    const sectionStyle = {
-        padding: '1rem',
-        border: '1px solid #ccc',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '5px',
-        marginBottom: '1rem'
     };
 
     return (

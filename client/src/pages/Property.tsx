@@ -6,6 +6,7 @@ import { PropertyDto } from '../models/PropertyDto';
 import PropertyCard from '../components/PropertyCard';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { sectionStyle } from '../styles/styles';
 
 const Property: React.FC = () => {
     const [properties, setProperties] = useState<PropertyDto[]>([]);
@@ -122,14 +123,6 @@ const Property: React.FC = () => {
     if (loading) {
         return <div>Loading...</div>;
     }
-
-    const sectionStyle = {
-        padding: '1rem',
-        border: '1px solid #ccc',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '5px',
-        marginBottom: '1rem'
-    };
 
     return (
         <div>

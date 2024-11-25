@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAgents, getAgentByRegistrationNumber } from '../services/agentService';
 import { AgentDto } from '../models/AgentDto';
 import AgentCard from '../components/AgentCard';
+import { sectionStyle } from '../styles/styles';
 
 const Agent: React.FC = () => {
     const [agents, setAgents] = useState<AgentDto[]>([]);
@@ -64,14 +65,6 @@ const Agent: React.FC = () => {
     if (loading) {
         return <div>Loading...</div>;
     }
-
-    const sectionStyle = {
-        padding: '1rem',
-        border: '1px solid #ccc',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '5px',
-        marginBottom: '1rem'
-    };
 
     return (
         <div>

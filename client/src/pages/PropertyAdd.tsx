@@ -4,6 +4,7 @@ import { addProperty } from '../services/propertyService';
 import { PropertyCreateDto } from '../models/PropertyCreateDto';
 import { AddressCreateDto } from '../models/AddressCreateDto';
 import { FeatureCreateDto } from '../models/FeatureCreateDto';
+import { sectionStyle } from '../styles/styles';
 
 const PropertyAdd: React.FC = () => {
     const [property, setProperty] = useState<PropertyCreateDto>({
@@ -108,14 +109,6 @@ const PropertyAdd: React.FC = () => {
             dateListed: new Date(),
             lastUpdate: new Date()
         });
-    };
-
-    const sectionStyle = {
-        padding: '1rem',
-        border: '1px solid #ccc',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '5px',
-        marginBottom: '1rem'
     };
 
     return (

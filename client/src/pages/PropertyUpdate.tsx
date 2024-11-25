@@ -8,7 +8,7 @@ import { FeatureCreateDto } from '../models/FeatureCreateDto';
 import { sectionStyle } from '../styles/styles';
 
 const PropertyUpdate: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const { mls } = useParams<{ mls: string }>();
     const [property, setProperty] = useState<PropertyDto>({
         mls: '',
         type: '',
@@ -46,8 +46,8 @@ const PropertyUpdate: React.FC = () => {
     useEffect(() => {
         const fetchProperty = async () => {
             try {
-                if (id) {
-                    const data = await getPropertyByMLS(id);
+                if (mls) {
+                    const data = await getPropertyByMLS(mls);
                     setProperty(data);
                 }
             } catch (error) {
@@ -56,7 +56,7 @@ const PropertyUpdate: React.FC = () => {
         };
 
         fetchProperty();
-    }, [id]);
+    }, [mls]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -103,7 +103,7 @@ const PropertyUpdate: React.FC = () => {
             lastUpdate: new Date()
         };
         try {
-            await updateProperty(id!, propertyUpdateDto);
+            await updateProperty(mls!, propertyUpdateDto);
             navigate('/property');
         } catch (error) {
             console.error('Error updating property with PUT:', error);
@@ -130,7 +130,7 @@ const PropertyUpdate: React.FC = () => {
             lastUpdate: new Date()
         };
         try {
-            await patchProperty(id!, propertyUpdateDto);
+            await patchProperty(mls!, propertyUpdateDto);
             navigate('/property');
         } catch (error) {
             console.error('Error updating property with PATCH:', error);
@@ -179,9 +179,9 @@ const PropertyUpdate: React.FC = () => {
                 formData.append('images', file);
             });
             try {
-                await addPropertyImages(id!, formData);
+                await addPropertyImages(mls!, formData);
                 // Refresh property data
-                const data = await getPropertyByMLS(id!);
+                const data = await getPropertyByMLS(mls!);
                 setProperty(data);
             } catch (error) {
                 console.error('Error adding property images:', error);
@@ -193,9 +193,9 @@ const PropertyUpdate: React.FC = () => {
         const formData = new FormData();
         formData.append('image', newImage);
         try {
-            await updatePropertyImage(id!, existingImageUrl, formData);
+            await updatePropertyImage(mls!, existingImageUrl, formData);
             // Refresh property data
-            const data = await getPropertyByMLS(id!);
+            const data = await getPropertyByMLS(mls!);
             setProperty(data);
         } catch (error) {
             console.error('Error updating property image:', error);
@@ -204,9 +204,9 @@ const PropertyUpdate: React.FC = () => {
 
     const handleDeleteImages = async (imageUrls: string[]) => {
         try {
-            await deletePropertyImages(id!, imageUrls);
+            await deletePropertyImages(mls!, imageUrls);
             // Refresh property data
-            const data = await getPropertyByMLS(id!);
+            const data = await getPropertyByMLS(mls!);
             setProperty(data);
         } catch (error) {
             console.error('Error deleting property images:', error);
