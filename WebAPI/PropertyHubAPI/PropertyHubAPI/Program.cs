@@ -9,8 +9,19 @@ namespace PropertyHubAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Add CORS policy
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
 
+            // Add services to the container.
             builder.Services.AddControllers();
             // Register AWSConnector service here
             builder.Services.AddSingleton<AWSConnector>();
@@ -35,10 +46,12 @@ namespace PropertyHubAPI
                 app.UseSwaggerUI();
             }
 
+            // Add CORS middleware
+            app.UseCors("CorsPolicy");
+
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
