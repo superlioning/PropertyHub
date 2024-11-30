@@ -40,6 +40,29 @@ const AgentAdd: React.FC = () => {
       setError("Registration category is required");
       return false;
     }
+    if (!agent.brokerageTradeName.trim()) {
+      setError("Brokerage trade name is required");
+      return false;
+    }
+    if (!agent.brokeragePhone.trim()) {
+      setError("Brokerage phone is required");
+      return false;
+    }
+    if (!agent.brokerageEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      setError("Invalid email format");
+      return false;
+    }
+    if (
+      !agent.brokerageAddress.streetNumber.trim() ||
+      !agent.brokerageAddress.streetName.trim() ||
+      !agent.brokerageAddress.city.trim() ||
+      !agent.brokerageAddress.province.trim() ||
+      !agent.brokerageAddress.postalCode.trim() ||
+      !agent.brokerageAddress.country.trim()
+    ) {
+      setError("All address fields except unit are required");
+      return false;
+    }
     return true;
   };
 
