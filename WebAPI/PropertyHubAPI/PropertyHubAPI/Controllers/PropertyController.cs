@@ -233,9 +233,10 @@ namespace PropertyHubAPI.Controllers
                 return ValidationProblem(ModelState);
             }
 
-            var patchedProperty = _mapper.Map<Property>(propertyToPatch);
+            // Map the updated DTO back to the entity
+            _mapper.Map(propertyToPatch, property);
 
-            var success = await _propertyHubRespository.UpdatePropertyAsync(patchedProperty);
+            var success = await _propertyHubRespository.UpdatePropertyAsync(property);
 
             if (!success)
             {
