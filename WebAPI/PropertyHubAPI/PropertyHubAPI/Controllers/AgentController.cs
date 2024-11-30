@@ -124,7 +124,7 @@ namespace PropertyHubAPI.Controllers
             }
 
             var patchedAgent = _mapper.Map<Agent>(agentToPatch);
-
+            patchedAgent.RegistrationNumber = registrationNumber;
             var success = await _agentRepository.UpdateAgentAsync(patchedAgent);
 
             if (success)

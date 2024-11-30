@@ -21,11 +21,17 @@ const PropertyView: React.FC = () => {
         if (mls) {
           const data = await getPropertyByMLS(mls);
           setProperty(data);
+
           if (data.agentRegistrationNumber) {
-            const agentData = await getAgentByRegistrationNumber(
-              data.agentRegistrationNumber
-            );
-            setAgent(agentData);
+            try {
+              const agentData = await getAgentByRegistrationNumber(
+                data.agentRegistrationNumber
+              );
+              setAgent(agentData);
+            } catch (agentError) {
+              console.error("Error fetching agent:", agentError);
+              // Don't set the main error state, just log agent error
+            }
           }
         }
       } catch (error) {
@@ -149,20 +155,48 @@ const PropertyView: React.FC = () => {
           </div>
         )}
 
-        {agent && (
+        {property.agentRegistrationNumber && (
           <div className="mt-4">
             <h2 className="mb-3">Agent Information</h2>
             <div className="card">
               <div className="card-body">
-                <p>Name: {agent.name}</p>
-                <p>Registration Category: {agent.registrationCategory}</p>
-                <p>Brokerage Trade Name: {agent.brokerageTradeName}</p>
-                <Link
-                  to={`/agent/${agent.registrationNumber}`}
-                  className="btn btn-primary"
+                {agent ? (
+                  <>
+                    <p>Name: {agent.name}</p>
+                    <p>Registration Category: {agent.registrationCategory}</p>
+                    <p>Brokerage Trade Name: {agent.brokerageTradeName}</p>
+                    <Link
+                      to={`/agent/${agent.registrationNumber}`}
+                      className="btn btn-primary me-2"
+                    >
+                      View Agent Details
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-warning">
+                      Agent details currently unavailable
+                    </p>
+                    <p>
+                      Agent Registration Number:{" "}
+                      {property.agentRegistrationNumber}
+                    </p>
+                    <Link
+                      to={`/agent/${property.agentRegistrationNumber}`}
+                      className="btn btn-primary me-2"
+                    >
+                      Find Agent
+                    </Link>
+                  </>
+                )}
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={() =>
+                    (window.location.href = `mailto:?subject=Property Inquiry: ${property.mls}`)
+                  }
                 >
-                  View Agent Details
-                </Link>
+                  Contact Agent
+                </button>
               </div>
             </div>
           </div>

@@ -30,8 +30,17 @@ export const updateAgent = async (registrationNumber: string, agentUpdateDto: Ag
     await axios.put(`${AGENT_API_URL}/${registrationNumber}`, agentUpdateDto);
 };
 
-export const patchAgent = async (registrationNumber: string, patchDocument: any): Promise<void> => {
-    await axios.patch(`${AGENT_API_URL}/${registrationNumber}`, patchDocument);
+export const patchAgent = async (registrationNumber: string, agentUpdateDto: AgentUpdateDto): Promise<void> => {
+    // Convert to JSON Patch format
+    const patchDoc = Object.entries(agentUpdateDto)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) => ({
+            op: "replace",
+            path: `/${key}`,
+            value: value
+        }));
+        
+    await axios.patch(`${AGENT_API_URL}/${registrationNumber}`, patchDoc);
 };
 
 export const deleteAgent = async (registrationNumber: string): Promise<void> => {

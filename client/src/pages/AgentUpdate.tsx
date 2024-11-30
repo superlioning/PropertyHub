@@ -108,37 +108,6 @@ const AgentUpdate: React.FC = () => {
     }
   };
 
-  const handleSubmitPut = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsSubmitting(true);
-    setError("");
-
-    const agentUpdateDto: AgentUpdateDto = {
-      name: agent.name,
-      registrationCategory: agent.registrationCategory,
-      brokerageTradeName: agent.brokerageTradeName,
-      brokeragePhone: agent.brokeragePhone,
-      brokerageEmail: agent.brokerageEmail,
-      brokerageAddress: agent.brokerageAddress,
-    };
-
-    try {
-      await updateAgent(registrationNumber!, agentUpdateDto);
-      navigate("/agent");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.message || "Failed to update agent");
-      } else {
-        setError("An unexpected error occurred while updating agent");
-      }
-      console.error("Error updating agent with PUT:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleSubmitPatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -199,7 +168,12 @@ const AgentUpdate: React.FC = () => {
             {error}
           </div>
         )}
-        <form onSubmit={handleSubmitPut}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitPatch(e);
+          }}
+        >
           <div className="mb-3">
             <label htmlFor="registrationNumber" className="form-label">
               Registration Number
@@ -366,26 +340,7 @@ const AgentUpdate: React.FC = () => {
                 Updating...
               </>
             ) : (
-              "Update Agent (PUT)"
-            )}
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary ms-2"
-            onClick={handleSubmitPatch}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <span
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                Updating...
-              </>
-            ) : (
-              "Update Agent (PATCH)"
+              "Update Agent"
             )}
           </button>
           <button
