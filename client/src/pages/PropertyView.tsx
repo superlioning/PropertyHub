@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FaBed, FaBath, FaCar, FaRulerCombined, FaCalendarAlt, 
+         FaDollarSign, FaHome, FaMapMarkerAlt, FaMoneyBill, FaCalendar } from 'react-icons/fa';
+import { Carousel } from 'react-bootstrap';
+import "./PropertyView.css";
 import { getPropertyByMLS, deleteProperty } from "../services/propertyService";
 import { PropertyDto } from "../models/PropertyDto";
 import { AgentDto } from "../models/AgentDto";
 import { getAgentByRegistrationNumber } from "../services/agentService";
 import { Link } from "react-router-dom";
-import { sectionStyle } from "../styles/styles";
 
 const PropertyView: React.FC = () => {
   const { mls } = useParams<{ mls: string }>();
@@ -90,126 +93,187 @@ const PropertyView: React.FC = () => {
 
   return (
     <div className="container mt-5">
-      <div style={sectionStyle}>
-        <h1 className="mb-4">{property.mls}</h1>
+      <div className="property-container">
+        {/* Header Section */}
+        <div className="property-header mb-4">
+          <h1>{property.mls}</h1>
+          <h2 className="text-primary">${property.price.toLocaleString()}</h2>
+          <p className="lead">
+            <FaMapMarkerAlt className="icon me-2" />
+            {address}
+          </p>
+        </div>
 
-        <div className="row">
-          <div className="col-md-6">
-            <p>Type: {property.type}</p>
-            <p>Price: ${property.price.toLocaleString()}</p>
-            <p>Bedrooms: {property.bedrooms}</p>
-            <p>Bathrooms: {property.bathrooms}</p>
-            <p>Parkings: {property.parkings}</p>
-            <p>Size: {property.size.toLocaleString()} sq ft</p>
-            <p>Year Built: {property.yearBuilt}</p>
-            <p>Tax: ${property.tax.toLocaleString()}</p>
-            <p>Address: {address}</p>
-            <p>Status: {property.status}</p>
+        {/* Image Gallery */}
+        {property.imageUrls && property.imageUrls.length > 0 && (
+          <div className="property-gallery mb-4">
+            <Carousel>
+              {property.imageUrls.map((url, index) => (
+                <Carousel.Item key={index}>
+                  <img
+                    className="d-block w-100"
+                    src={url}
+                    alt={`Property Image ${index + 1}`}
+                  />
+                </Carousel.Item>
+              ))}
+            </Carousel>
           </div>
-          <div className="col-md-6">
-            <p>Description: {property.description}</p>
-            <p>
-              Date Listed: {new Date(property.dateListed).toLocaleDateString()}
-            </p>
-            <p>
-              Last Update: {new Date(property.lastUpdate).toLocaleDateString()}
-            </p>
+        )}
+
+        {/* Main Info Cards */}
+        <div className="row mb-4">
+          <div className="col-md-8">
+            <div className="card h-100">
+              <div className="card-body">
+                <h3 className="card-title mb-4">Property Details</h3>
+                <div className="row g-3">
+                  <div className="col-6 col-md-3">
+                    <div className="detail-item">
+                      <FaHome className="icon" />
+                      <span className="label">Type</span>
+                      <span className="value">{property.type}</span>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="detail-item">
+                      <FaBed className="icon" />
+                      <span className="label">Bedrooms</span>
+                      <span className="value">{property.bedrooms}</span>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="detail-item">
+                      <FaBath className="icon" />
+                      <span className="label">Bathrooms</span>
+                      <span className="value">{property.bathrooms}</span>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="detail-item">
+                      <FaCar className="icon" />
+                      <span className="label">Parking</span>
+                      <span className="value">{property.parkings}</span>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="detail-item">
+                      <FaCalendar className="icon" />
+                      <span className="label">Year Built</span>
+                      <span className="value">{property.yearBuilt}</span>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="detail-item">
+                      <FaRulerCombined className="icon" />
+                      <span className="label">Size</span>
+                      <span className="value">{property.size.toLocaleString()} sq ft</span>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="detail-item">
+                      <FaMoneyBill className="icon" />
+                      <span className="label">Tax</span>
+                      <span className="value">${property.tax.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div className="card h-100">
+              <div className="card-body">
+                <h3 className="card-title mb-4">Status Info</h3>
+                <div className="status-item">
+                  <FaHome className="icon" />
+                  <span className="label">Status</span>
+                  <span className="value badge bg-success">{property.status}</span>
+                </div>
+                <div className="status-item">
+                  <FaCalendarAlt className="icon" />
+                  <span className="label">Listed</span>
+                  <span className="value">{new Date(property.dateListed).toLocaleDateString()}</span>
+                </div>
+                <div className="status-item">
+                  <FaCalendarAlt className="icon" />
+                  <span className="label">Update</span>
+                  <span className="value">{new Date(property.lastUpdate).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {property.imageUrls && property.imageUrls.length > 0 && (
-          <div className="mt-4">
-            <h2 className="mb-3">Images</h2>
-            <div className="row g-3">
-              {property.imageUrls.map((url, index) => (
-                <div key={index} className="col-md-4">
-                  <img
-                    src={url}
-                    alt={`Property Image ${index + 1}`}
-                    className="img-fluid rounded"
-                    style={{ maxHeight: "200px", objectFit: "cover" }}
-                  />
-                </div>
-              ))}
-            </div>
+        {/* Description Section */}
+        <div className="card mb-4">
+          <div className="card-body">
+            <h3 className="card-title">Description</h3>
+            <p className="card-text">{property.description}</p>
           </div>
-        )}
+        </div>
 
+        {/* Features Section */}
         {property.feature && (
-          <div className="mt-4">
-            <h2 className="mb-3">Features</h2>
-            <div className="row">
-              <div className="col-md-3">
-                <p>Walk Score: {property.feature.walkScore}</p>
-              </div>
-              <div className="col-md-3">
-                <p>Transit Score: {property.feature.transitScore}</p>
-              </div>
-              <div className="col-md-3">
-                <p>Bike Score: {property.feature.bikeScore}</p>
-              </div>
-              <div className="col-md-3">
-                <p>Education Score: {property.feature.educationScore}</p>
+          <div className="card mb-4">
+            <div className="card-body">
+              <h3 className="card-title mb-4">Location Features</h3>
+              <div className="row">
+                {[
+                  { label: 'Walk Score', value: property.feature.walkScore },
+                  { label: 'Transit Score', value: property.feature.transitScore },
+                  { label: 'Bike Score', value: property.feature.bikeScore },
+                  { label: 'Education Score', value: property.feature.educationScore }
+                ].map((item, index) => (
+                  <div key={index} className="col-md-3 col-6">
+                    <div className="score-item">
+                      <div className="score-circle">{item.value}</div>
+                      <div className="score-label">{item.label}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        {property.agentRegistrationNumber && (
-          <div className="mt-4">
-            <h2 className="mb-3">Agent Information</h2>
-            <div className="card">
-              <div className="card-body">
-                {agent ? (
-                  <>
-                    <p>Name: {agent.name}</p>
-                    <p>Registration Category: {agent.registrationCategory}</p>
-                    <p>Brokerage Trade Name: {agent.brokerageTradeName}</p>
-                    <Link
-                      to={`/agent/${agent.registrationNumber}`}
-                      className="btn btn-primary me-2"
-                    >
+        {/* Agent Section */}
+        {agent && (
+          <div className="card mb-4">
+            <div className="card-body">
+              <h3 className="card-title mb-4">Agent Information</h3>
+              <div className="agent-info">
+                <div className="row align-items-center">
+                  <div className="col-md-8">
+                    <h4>{agent.name}</h4>
+                    <p className="mb-2">{agent.registrationCategory}</p>
+                    <p className="mb-2">{agent.brokerageTradeName}</p>
+                  </div>
+                  <div className="col-md-4 text-md-end">
+                    <Link to={`/agent/${agent.registrationNumber}`}
+                      className="btn btn-primary mb-2 w-100">
                       View Agent Details
                     </Link>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-warning">
-                      Agent details currently unavailable
-                    </p>
-                    <p>
-                      Agent Registration Number:{" "}
-                      {property.agentRegistrationNumber}
-                    </p>
-                    <Link
-                      to={`/agent/${property.agentRegistrationNumber}`}
-                      className="btn btn-primary me-2"
-                    >
-                      Find Agent
-                    </Link>
-                  </>
-                )}
-                <button
-                  className="btn btn-outline-primary"
-                  onClick={() =>
-                    (window.location.href = `mailto:?subject=Property Inquiry: ${property.mls}`)
-                  }
-                >
-                  Contact Agent
-                </button>
+                    <button className="btn btn-outline-primary w-100"
+                      onClick={() => window.location.href = `mailto:?subject=Property Inquiry: ${property.mls}`}>
+                      Contact Agent
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        <div className="mt-4 d-flex gap-2">
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate(`/property/update/${mls}`)}
-          >
+        {/* Action Buttons */}
+        <div className="d-flex gap-2 justify-content-end">
+          <button className="btn btn-primary"
+            onClick={() => navigate(`/property/update/${mls}`)}>
             Update Property
           </button>
-          <button className="btn btn-danger" onClick={handleDelete}>
+          <button className="btn btn-danger"
+            onClick={handleDelete}>
             Delete Property
           </button>
         </div>
