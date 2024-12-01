@@ -12,6 +12,21 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { sectionStyle } from "../styles/styles";
 import debounce from "lodash/debounce";
+import "./Property.css";
+import {
+  FaSearch,
+  FaFilter,
+  FaList,
+  FaTh,
+  FaHome,
+  FaDollarSign,
+  FaBed,
+  FaBath,
+  FaCar,
+  FaRuler,
+  FaCalendar,
+  FaMoneyBill,
+} from "react-icons/fa";
 
 const Property: React.FC = () => {
   const [properties, setProperties] = useState<PropertyDto[]>([]);
@@ -191,107 +206,115 @@ const Property: React.FC = () => {
   }
 
   return (
-    <div>
+    <div className="property-container">
       <div className="row">
-        <div className="col-md-6" style={sectionStyle}>
-          <h3>Search Criteria</h3>
-          {error && (
-            <div className="alert alert-danger" role="alert">
-              {error}
-            </div>
-          )}
-          <div className="mb-3">
-            <select
-              className="form-select"
-              value={searchType}
-              onChange={(e) => setSearchType(e.target.value)}
-              aria-label="Search type selection"
-            >
-              <option value="mls">MLS</option>
-              <option value="agent">Agent</option>
-              <option value="street">Street</option>
-              <option value="city">City</option>
-              <option value="postalCode">Postal Code</option>
-            </select>
-            {searchType === "street" ? (
-              <div className="mt-2">
-                <input
-                  type="text"
-                  className="form-control mb-2"
-                  placeholder="Enter Street Number"
-                  value={streetNumber}
-                  onChange={(e) => setStreetNumber(e.target.value)}
-                  aria-label="Street number input"
-                  required
-                />
-                <input
-                  type="text"
-                  className="form-control mb-2"
-                  placeholder="Enter Street Name"
-                  value={streetName}
-                  onChange={(e) => setStreetName(e.target.value)}
-                  aria-label="Street name input"
-                  required
-                />
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter Unit (Optional)"
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  aria-label="Unit number input"
-                />
+        <div className="col-md-6">
+          <div className="search-section">
+            <h3 className="section-title">
+              <FaSearch /> Search Properties
+            </h3>
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
               </div>
-            ) : (
-              <input
-                type="text"
-                className="form-control mt-2"
-                placeholder={`Enter ${searchType}`}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                aria-label={`${searchType} input`}
-              />
             )}
-            <button
-              className="btn btn-primary mt-2"
-              onClick={handleSearch}
-              disabled={searchLoading}
-            >
-              {searchLoading ? (
-                <>
-                  <span
-                    className="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
-                  Searching...
-                </>
+            <div className="mb-3">
+              <select
+                className="form-select form-select-lg mb-3"
+                value={searchType}
+                onChange={(e) => setSearchType(e.target.value)}
+              >
+                <option value="mls">MLS</option>
+                <option value="agent">Agent</option>
+                <option value="street">Street</option>
+                <option value="city">City</option>
+                <option value="postalCode">Postal Code</option>
+              </select>
+              {searchType === "street" ? (
+                <div className="street-inputs">
+                  <input
+                    type="text"
+                    className="form-control mb-2"
+                    placeholder="Enter Street Number"
+                    value={streetNumber}
+                    onChange={(e) => setStreetNumber(e.target.value)}
+                    aria-label="Street number input"
+                    required
+                  />
+                  <input
+                    type="text"
+                    className="form-control mb-2"
+                    placeholder="Enter Street Name"
+                    value={streetName}
+                    onChange={(e) => setStreetName(e.target.value)}
+                    aria-label="Street name input"
+                    required
+                  />
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Unit (Optional)"
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
+                    aria-label="Unit number input"
+                  />
+                </div>
               ) : (
-                "Search"
+                <input
+                  type="text"
+                  className="form-control form-control-lg"
+                  placeholder={`Enter ${searchType}`}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               )}
-            </button>
-            <button
-              className="btn btn-secondary mt-2 ms-2"
-              onClick={handleReset}
-            >
-              Reset
-            </button>
+              <div className="search-buttons">
+                <button
+                  className="btn btn-primary btn-lg"
+                  onClick={handleSearch}
+                  disabled={searchLoading}
+                >
+                  {searchLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <FaSearch className="me-2" /> Search
+                    </>
+                  )}
+                </button>
+                <button
+                  className="btn btn-outline-secondary btn-lg"
+                  onClick={handleReset}
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="col-md-6" style={sectionStyle}>
-          <h3>Additional Filter</h3>
-          <div className="mb-3">
-            <select
-              className="form-select"
-              value={propertyType}
-              onChange={(e) => setPropertyType(e.target.value)}
-            >
-              <option value="">All Types</option>
-              <option value="Condo">Condo</option>
-              <option value="Townhouse">Townhouse</option>
-              <option value="Semi">Semi</option>
-              <option value="Detached">Detached</option>
-            </select>
+        <div className="col-md-6">
+          <div className="filter-section">
+            <h3 className="section-title">
+              <FaFilter /> Filters
+            </h3>
+
+            <div className="filter-group">
+              <select
+                className="form-select mb-3"
+                value={propertyType}
+                onChange={(e) => setPropertyType(e.target.value)}
+              >
+                <option value="">All Types</option>
+                <option value="Condo">Condo</option>
+                <option value="Townhouse">Townhouse</option>
+                <option value="Semi">Semi</option>
+                <option value="Detached">Detached</option>
+              </select>
+            </div>
+
             <select
               className="form-select mt-2"
               value={propertyStatus}
@@ -304,121 +327,173 @@ const Property: React.FC = () => {
             </select>
           </div>
           <div className="mb-3">
-            <label>
-              Price Range: ${priceRange[0]} - ${priceRange[1]}
-            </label>
-            <Slider
-              range
-              max={1000000000}
-              min={0}
-              value={priceRange}
-              onChange={(value) => setPriceRange(value as [number, number])}
-              styles={{
-                handle: { borderColor: "CornflowerBlue" },
-                track: { backgroundColor: "CornflowerBlue" },
-              }}
-            />
-            <label>
-              Bedrooms: {bedroomsRange[0]} - {bedroomsRange[1]}
-            </label>
-            <Slider
-              range
-              max={10}
-              min={0}
-              value={bedroomsRange}
-              onChange={(value) => setBedroomsRange(value as [number, number])}
-              styles={{
-                handle: { borderColor: "DarkSeaGreen" },
-                track: { backgroundColor: "DarkSeaGreen" },
-              }}
-            />
-            <label>
-              Bathrooms: {bathroomsRange[0]} - {bathroomsRange[1]}
-            </label>
-            <Slider
-              range
-              max={10}
-              min={0}
-              value={bathroomsRange}
-              onChange={(value) => setBathroomsRange(value as [number, number])}
-              styles={{
-                handle: { borderColor: "IndianRed" },
-                track: { backgroundColor: "IndianRed" },
-              }}
-            />
-            <label>
-              Parkings: {parkingsRange[0]} - {parkingsRange[1]}
-            </label>
-            <Slider
-              range
-              max={10}
-              min={0}
-              value={parkingsRange}
-              onChange={(value) => setParkingsRange(value as [number, number])}
-              styles={{
-                handle: { borderColor: "MediumPurple" },
-                track: { backgroundColor: "MediumPurple" },
-              }}
-            />
-            <label>
-              Size (sq ft): {sizeRange[0]} - {sizeRange[1]}
-            </label>
-            <Slider
-              range
-              max={100000}
-              min={0}
-              value={sizeRange}
-              onChange={(value) => setSizeRange(value as [number, number])}
-              styles={{
-                handle: { borderColor: "Tomato" },
-                track: { backgroundColor: "Tomato" },
-              }}
-            />
-            <label>
-              Year Built: {yearBuiltRange[0]} - {yearBuiltRange[1]}
-            </label>
-            <Slider
-              range
-              max={new Date().getFullYear()}
-              min={1900}
-              value={yearBuiltRange}
-              onChange={(value) => setYearBuiltRange(value as [number, number])}
-              styles={{
-                handle: { borderColor: "Sienna" },
-                track: { backgroundColor: "Sienna" },
-              }}
-            />
-            <label>
-              Tax: ${taxRange[0]} - ${taxRange[1]}
-            </label>
-            <Slider
-              range
-              max={100000}
-              min={0}
-              value={taxRange}
-              onChange={(value) => setTaxRange(value as [number, number])}
-              styles={{
-                handle: { borderColor: "GoldenRod" },
-                track: { backgroundColor: "GoldenRod" },
-              }}
-            />
+            <div className="filter-group">
+              <label className="filter-label">
+                <FaDollarSign /> Price Range
+              </label>
+              <div className="slider-container">
+                <Slider
+                  range
+                  max={1000000000}
+                  min={0}
+                  value={priceRange}
+                  onChange={(value) => setPriceRange(value as [number, number])}
+                  className="custom-slider"
+                />
+                <div className="range-value">
+                  ${priceRange[0].toLocaleString()} - ${priceRange[1].toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">
+                <FaBed /> Bedrooms
+              </label>
+              <div className="slider-container">
+                <Slider
+                  range
+                  max={10}
+                  min={0}
+                  value={bedroomsRange}
+                  onChange={(value) =>
+                    setBedroomsRange(value as [number, number])
+                  }
+                  className="custom-slider"
+                />
+                <div className="range-value">
+                  {bedroomsRange[0].toLocaleString()} - {bedroomsRange[1].toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">
+                <FaBath /> Bathrooms
+              </label>
+              <div className="slider-container">
+                <Slider
+                  range
+                  max={10}
+                  min={0}
+                  value={bathroomsRange}
+                  onChange={(value) =>
+                    setBathroomsRange(value as [number, number])
+                  }
+                  className="custom-slider"
+                />
+                <div className="range-value">
+                  {bathroomsRange[0].toLocaleString()} - {bathroomsRange[1].toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">
+                <FaCar /> Parkings
+              </label>
+              <div className="slider-container">
+                <Slider
+                  range
+                  max={10}
+                  min={0}
+                  value={parkingsRange}
+                  onChange={(value) =>
+                    setParkingsRange(value as [number, number])
+                  }
+                  className="custom-slider"
+                />
+                <div className="range-value">
+                  {parkingsRange[0].toLocaleString()} - {parkingsRange[1].toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">
+                <FaRuler /> Size (sq ft)
+              </label>
+              <div className="slider-container">
+                <Slider
+                  range
+                  max={100000}
+                  min={0}
+                  value={sizeRange}
+                  onChange={(value) => setSizeRange(value as [number, number])}
+                  className="custom-slider"
+                />
+                <div className="range-value">
+                  {sizeRange[0].toLocaleString()} - {sizeRange[1].toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">
+                <FaCalendar /> Year Built
+              </label>
+              <div className="slider-container">
+                <Slider
+                  range
+                  max={new Date().getFullYear()}
+                  min={1900}
+                  value={yearBuiltRange}
+                  onChange={(value) =>
+                    setYearBuiltRange(value as [number, number])
+                  }
+                  className="custom-slider"
+                />
+                <div className="range-value">
+                  {yearBuiltRange[0].toLocaleString()} - {yearBuiltRange[1].toLocaleString()}
+                </div>
+              </div>
+            </div>
+            <div className="filter-group">
+              <label className="filter-label">
+                <FaMoneyBill /> Tax
+              </label>
+              <div className="slider-container">
+                <Slider
+                  range
+                  max={100000}
+                  min={0}
+                  value={taxRange}
+                  onChange={(value) => setTaxRange(value as [number, number])}
+                  className="custom-slider"
+                />
+                <div className="range-value">
+                  {taxRange[0].toLocaleString()} - {taxRange[1].toLocaleString()}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div className="row mt-4" style={sectionStyle}>
-        <div className="col-md-12">
-          <h3>Results</h3>
-          <div className="row">
-            {filteredProperties && filteredProperties.length > 0 ? (
-              filteredProperties.map((property) => (
-                <div className="col-md-4 mb-3" key={property.mls}>
-                  <PropertyCard property={property} />
-                </div>
-              ))
-            ) : (
-              <div>No properties found</div>
-            )}
+      <div className="results-section mt-4">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h3 className="section-title mb-0">
+            <FaHome /> Properties
+          </h3>
+          <div className="view-toggle btn-group">
+            <button className="btn btn-outline-primary">
+              <FaTh /> Grid
+            </button>
+            <button className="btn btn-outline-primary">
+              <FaList /> List
+            </button>
           </div>
+        </div>
+
+        <div className="property-grid">
+          {filteredProperties && filteredProperties.length > 0 ? (
+            filteredProperties.map((property) => (
+              <div className="property-card" key={property.mls}>
+                <PropertyCard property={property} />
+              </div>
+            ))
+          ) : (
+            <div className="no-results">No properties found</div>
+          )}
         </div>
       </div>
     </div>

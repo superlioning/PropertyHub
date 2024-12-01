@@ -1,0 +1,77 @@
+/* Property.css */
+.property-container {
+  padding: 20px;
+}
+
+.search-section, .filter-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.search-section:hover, .filter-section:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.section-title {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-group {
+  margin-bottom: 15px;
+}
+
+.filter-label {
+  font-weight: 500;
+  color: #34495e;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.results-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.view-toggle {
+  margin-bottom: 20px;
+}
+
+.property-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.property-card {
+  transition: transform 0.2s;
+}
+
+.property-card:hover {
+  transform: translateY(-5px);
+}
+
+.slider-container {
+  padding: 10px 0;
+}
+
+.range-value {
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.search-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
