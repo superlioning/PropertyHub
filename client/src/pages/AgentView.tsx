@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  getAgentByRegistrationNumber,
-  deleteAgent,
-} from "../services/agentService";
+import { getAgentByRegistrationNumber, deleteAgent } from "../services/agentService";
 import { AgentDto } from "../models/AgentDto";
-import { sectionStyle } from "../styles/styles";
-import { Modal, Button, Spinner } from "react-bootstrap";
+import { Modal, Button, Spinner, Card, Container, Row, Col } from "react-bootstrap";
+import { FaUser, FaBuilding, FaPhone, FaEnvelope, FaMapMarkerAlt, FaIdCard } from "react-icons/fa";
 
 const AgentView: React.FC = () => {
   const { registrationNumber } = useParams<{ registrationNumber: string }>();
@@ -15,6 +12,15 @@ const AgentView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
+  const cardStyle = {
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+    marginBottom: "1.5rem",
+  };
+
+  const iconStyle = {
+    marginRight: "10px",
+    color: "#666",
+  };
 
   useEffect(() => {
     const fetchAgent = async () => {
@@ -85,33 +91,101 @@ const AgentView: React.FC = () => {
   }
 
   return (
-    <div className="container mt-5">
-      <div style={sectionStyle}>
-        <h1>{agent.registrationNumber}</h1>
-        <p>Name: {agent.name}</p>
-        <p>Registration Category: {agent.registrationCategory}</p>
-        <p>Brokerage Trade Name: {agent.brokerageTradeName}</p>
-        <p>Brokerage Phone: {agent.brokeragePhone}</p>
-        <p>Brokerage Email: {agent.brokerageEmail}</p>
-        <p>
-          Brokerage Address: {agent.brokerageAddress.streetNumber}{" "}
-          {agent.brokerageAddress.streetName}, {agent.brokerageAddress.city},{" "}
-          {agent.brokerageAddress.province}, {agent.brokerageAddress.postalCode}
-          , {agent.brokerageAddress.country}
-        </p>
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate(`/agent/update/${registrationNumber}`)}
-        >
-          Update
-        </button>
-        <button
-          className="btn btn-danger ms-2"
-          onClick={() => setShowDeleteModal(true)}
-        >
-          Delete
-        </button>
-      </div>
+    <Container className="py-5">
+      <Card style={cardStyle}>
+        <Card.Header className="bg-primary text-white">
+          <div className="d-flex justify-content-between align-items-center">
+            <h2 className="mb-0">
+              <FaIdCard style={iconStyle} className="text-white" />
+              Agent Details
+            </h2>
+            <div>
+              <Button
+                variant="outline-light"
+                onClick={() => navigate(`/agent/update/${registrationNumber}`)}
+                className="me-2"
+              >
+                Update
+              </Button>
+              <Button variant="danger" onClick={() => setShowDeleteModal(true)}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md={6}>
+              <Card className="h-100" style={cardStyle}>
+                <Card.Header className="bg-light">
+                  <h4 className="mb-0">
+                    <FaUser style={iconStyle} />
+                    Personal Information
+                  </h4>
+                </Card.Header>
+                <Card.Body>
+                  <p>
+                    <strong>Registration Number:</strong>{" "}
+                    {agent?.registrationNumber}
+                  </p>
+                  <p>
+                    <strong>Name:</strong> {agent?.name}
+                  </p>
+                  <p>
+                    <strong>Registration Category:</strong>{" "}
+                    {agent?.registrationCategory}
+                  </p>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card className="h-100" style={cardStyle}>
+                <Card.Header className="bg-light">
+                  <h4 className="mb-0">
+                    <FaBuilding style={iconStyle} />
+                    Brokerage Information
+                  </h4>
+                </Card.Header>
+                <Card.Body>
+                  <p>
+                    <strong>Trade Name:</strong> {agent?.brokerageTradeName}
+                  </p>
+                  <p>
+                    <FaPhone style={iconStyle} />
+                    <strong>Phone:</strong> {agent?.brokeragePhone}
+                  </p>
+                  <p>
+                    <FaEnvelope style={iconStyle} />
+                    <strong>Email:</strong> {agent?.brokerageEmail}
+                  </p>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+          <Row className="mt-4">
+            <Col>
+              <Card style={cardStyle}>
+                <Card.Header className="bg-light">
+                  <h4 className="mb-0">
+                    <FaMapMarkerAlt style={iconStyle} />
+                    Brokerage Address
+                  </h4>
+                </Card.Header>
+                <Card.Body>
+                  <p className="lead">
+                    {agent?.brokerageAddress.streetNumber}{" "}
+                    {agent?.brokerageAddress.streetName},<br />
+                    {agent?.brokerageAddress.city},{" "}
+                    {agent?.brokerageAddress.province}{" "}
+                    {agent?.brokerageAddress.postalCode},<br />
+                    {agent?.brokerageAddress.country}
+                  </p>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
@@ -131,7 +205,7 @@ const AgentView: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </Container>
   );
 };
 
