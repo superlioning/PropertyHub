@@ -250,14 +250,38 @@ namespace PropertyHubAPI.Controllers
         [HttpDelete("{mls}")]
         public async Task<IActionResult> DeletePropertyAsync(string mls)
         {
-            var success = await _propertyHubRespository.DeletePropertyAsync(mls);
-
-            if (!success)
+            // First get the property to access its images
+            var property = await _propertyHubRespository.GetPropertyByMLSAsync(mls);
+            if (property == null)
             {
-                return StatusCode(500, "An error occurred while deleting the property.");
+                return NotFound($"Property with MLS {mls} not found.");
             }
 
-            return Ok(new { Message = "Property deleted successfully." });
+            try
+            {
+                // Delete all associated images from S3
+                if (property.ImageUrls != null && property.ImageUrls.Any())
+                {
+                    foreach (var imageUrl in property.ImageUrls)
+                    {
+                        await _fileStorageService.DeleteOneImageFromPropertyAsync(imageUrl);
+                    }
+                }
+
+                // Delete the property from DynamoDB
+                var success = await _propertyHubRespository.DeletePropertyAsync(mls);
+
+                if (!success)
+                {
+                    return StatusCode(500, "An error occurred while deleting the property.");
+                }
+
+                return Ok(new { Message = "Property and associated images deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while deleting the property: {ex.Message}");
+            }
         }
 
         // Add New Images to the Existing Property
