@@ -138,6 +138,37 @@ const AgentUpdate: React.FC = () => {
     }
   };
 
+  const handleSubmitPut = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    setError("");
+
+    const agentUpdateDto: AgentUpdateDto = {
+      name: agent.name,
+      registrationCategory: agent.registrationCategory,
+      brokerageTradeName: agent.brokerageTradeName,
+      brokeragePhone: agent.brokeragePhone,
+      brokerageEmail: agent.brokerageEmail,
+      brokerageAddress: agent.brokerageAddress,
+    };
+
+    try {
+      await updateAgent(registrationNumber!, agentUpdateDto);
+      navigate("/agent");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || "Failed to update agent");
+      } else {
+        setError("An unexpected error occurred while updating agent");
+      }
+      console.error("Error updating agent with PUT:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleReset = () => {
     setError("");
     setAgent({
@@ -440,6 +471,25 @@ const AgentUpdate: React.FC = () => {
                     Reset
                   </button>
                   <button
+                    type="button"
+                    className="btn btn-info"
+                    onClick={handleSubmitPut}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        Updating (PUT)...
+                      </>
+                    ) : (
+                      "Update (PUT)"
+                    )}
+                  </button>
+                  <button
                     type="submit"
                     className="btn btn-primary"
                     disabled={isSubmitting}
@@ -451,10 +501,10 @@ const AgentUpdate: React.FC = () => {
                           role="status"
                           aria-hidden="true"
                         ></span>
-                        Updating Agent...
+                        Updating (PATCH)...
                       </>
                     ) : (
-                      "Update Agent"
+                      "Update (PATCH)"
                     )}
                   </button>
                 </div>

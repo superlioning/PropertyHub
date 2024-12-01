@@ -190,6 +190,49 @@ const PropertyUpdate: React.FC = () => {
     }
   };
 
+  const handlePutUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      // Call the PUT endpoint directly
+      await updateProperty(mls!, {
+        type: property.type,
+        price: property.price,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        parkings: property.parkings,
+        size: property.size,
+        yearBuilt: property.yearBuilt,
+        tax: property.tax,
+        address: property.address,
+        status: property.status,
+        description: property.description,
+        agentRegistrationNumber: property.agentRegistrationNumber,
+        imageUrls: property.imageUrls,
+        feature: property.feature,
+        lastUpdate: new Date(),
+      });
+
+      // Handle image uploads if needed
+      if (selectedFiles.length > 0) {
+        const formData = new FormData();
+        selectedFiles.forEach((file) => formData.append("imageUrls", file));
+        await addPropertyImages(mls!, formData);
+      }
+
+      navigate("/property");
+    } catch (error) {
+      console.error("Error updating property:", error);
+      setErrorMessage(
+        "Failed to update property using PUT method. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleReset = async () => {
     if (window.confirm("Are you sure you want to reset all changes?")) {
       try {
@@ -710,7 +753,15 @@ const PropertyUpdate: React.FC = () => {
                 className="btn btn-primary px-4 py-2"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Updating..." : "Update Property"}
+                {isSubmitting ? "Updating..." : "Update Property (PATCH)"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-success px-4 py-2"
+                onClick={handlePutUpdate}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Updating..." : "Update Property (PUT)"}
               </button>
               <button
                 type="button"
