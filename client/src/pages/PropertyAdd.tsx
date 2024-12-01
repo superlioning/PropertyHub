@@ -576,7 +576,8 @@ const PropertyAdd: React.FC = () => {
                   disabled={isSubmitting}
                 />
                 <small className="text-muted d-block mt-2">
-                  Accepted formats: JPG, PNG, WebP. Max size: 5MB per file.
+                  Accepted formats: JPG, PNG, WebP. Max size: 5MB per file. Max
+                  files: {MAX_FILES}
                 </small>
               </div>
               <div className="row g-3 mt-2">
