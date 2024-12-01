@@ -18,8 +18,6 @@ namespace PropertyHubAPI.Mapping
             CreateMap<PropertyCreateDto, Property>();
             CreateMap<Property, PropertyUpdateDto>();
             CreateMap<PropertyUpdateDto, Property>();
-            CreateMap<Property, PropertyWithoutOthersAttributeDto>();
-            CreateMap<PropertyWithoutOthersAttributeDto, Property>();
 
             // Address
             CreateMap<Address, AddressDto>();
