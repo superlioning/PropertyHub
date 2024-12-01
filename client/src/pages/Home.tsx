@@ -1,6 +1,7 @@
 import React from "react";
 import { CSSProperties } from "react";
 import { FaHome, FaSearchLocation, FaHandshake } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const imageStyle: CSSProperties = {
@@ -18,13 +19,23 @@ const Home: React.FC = () => {
     zIndex: 1,
   };
 
+  const navigate = useNavigate();
+  const handleViewProperties = () => {
+    navigate("/property");
+  };
+
+  const handleContactAgent = () => {
+    navigate("/agent");
+  };
+
   return (
     <>
       <div className="hero-section position-relative">
         <div
           id="carouselExampleRide"
-          className="carousel slide"
-          data-bs-ride="true"
+          className="carousel slide carousel-fade"
+          data-bs-ride="carousel"
+          data-bs-interval="2000"
         >
           <div className="carousel-inner">
             <div className="carousel-item active">
@@ -42,15 +53,21 @@ const Home: React.FC = () => {
                 <p className="lead mb-4">
                   Discover the perfect place to call home
                 </p>
-                <button className="btn btn-primary btn-lg px-4 me-2">
+                <button
+                  className="btn btn-primary btn-lg px-4 me-2"
+                  onClick={handleViewProperties}
+                >
                   View Properties
                 </button>
-                <button className="btn btn-outline-light btn-lg px-4">
+                <button
+                  className="btn btn-outline-light btn-lg px-4"
+                  onClick={handleContactAgent}
+                >
                   Contact Agent
                 </button>
               </div>
             </div>
-            <div className="carousel-item active">
+            <div className="carousel-item">
               <div style={overlayStyle}></div>
               <img
                 src="/home_2.jpg"
@@ -73,7 +90,7 @@ const Home: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="carousel-item active">
+            <div className="carousel-item">
               <div style={overlayStyle}></div>
               <img
                 src="/home_3.jpg"
@@ -133,7 +150,7 @@ const Home: React.FC = () => {
                 <div className="card-body text-center p-4">
                   <FaHome
                     className="feature-icon mb-3"
-                    size={40}
+                    size={80}
                     color="#0d6efd"
                   />
                   <h4>Wide Selection</h4>
@@ -149,7 +166,7 @@ const Home: React.FC = () => {
                 <div className="card-body text-center p-4">
                   <FaSearchLocation
                     className="feature-icon mb-3"
-                    size={40}
+                    size={80}
                     color="#0d6efd"
                   />
                   <h4>Smart Search</h4>
@@ -165,7 +182,7 @@ const Home: React.FC = () => {
                 <div className="card-body text-center p-4">
                   <FaHandshake
                     className="feature-icon mb-3"
-                    size={40}
+                    size={80}
                     color="#0d6efd"
                   />
                   <h4>Expert Agents</h4>

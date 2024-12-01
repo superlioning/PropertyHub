@@ -64,7 +64,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <hr />
-        <div className="text-center py-3">
+        <div className="text-center pt-3">
           <span className="text-muted">
             © 2024 PropertyHub. All rights reserved.
           </span>

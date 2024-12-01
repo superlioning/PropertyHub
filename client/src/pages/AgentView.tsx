@@ -93,7 +93,7 @@ const AgentView: React.FC = () => {
   return (
     <Container className="py-5">
       <Card style={cardStyle}>
-        <Card.Header className="bg-primary text-white">
+        <Card.Header className="bg-secondary text-white">
           <div className="d-flex justify-content-between align-items-center">
             <h2 className="mb-0">
               <FaIdCard style={iconStyle} className="text-white" />
@@ -101,7 +101,7 @@ const AgentView: React.FC = () => {
             </h2>
             <div>
               <Button
-                variant="outline-light"
+                variant="primary"
                 onClick={() => navigate(`/agent/update/${registrationNumber}`)}
                 className="me-2"
               >

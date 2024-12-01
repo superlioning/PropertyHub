@@ -117,11 +117,11 @@ const Agent: React.FC = () => {
   return (
     <>
       <div style={customStyles.header}>
-        <Container>
-          <h1 className="text-primary">
+        <Container className="text-center">
+          <h2>
             <FaUserTie style={customStyles.icon} />
             Real Estate Agents Directory
-          </h1>
+          </h2>
         </Container>
       </div>
 

@@ -164,7 +164,7 @@ const AgentUpdate: React.FC = () => {
       <div className="row justify-content-center">
         <div className="col-lg-8">
           <div className="card shadow-sm">
-            <div className="card-header bg-primary text-white">
+            <div className="card-header bg-secondary text-white">
               <h3 className="mb-0">Update Agent</h3>
             </div>
             <div className="card-body">
