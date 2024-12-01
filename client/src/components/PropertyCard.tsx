@@ -7,24 +7,45 @@ interface PropertyCardProps {
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
-    const address = `${property.address.unit ? property.address.unit + ' ' : ''}${property.address.streetNumber} ${property.address.streetName}, ${property.address.city}, ${property.address.province} ${property.address.postalCode}, ${property.address.country}`;
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
 
-    return (
-        <div className="card mb-3">
-            <img src={property.imageUrls?.[0]} className="card-img-top" alt="Property" />
-            <div className="card-img-overlay text-white bg-dark bg-opacity-50">
-                <h5 className="card-title">{property.type}</h5>
-                <p className="card-text">${property.price}</p>
-                <p className="card-text">{property.bedrooms} Bedrooms</p>
-                <p className="card-text">{property.bathrooms} Bathrooms</p>
-                <p className="card-text">{property.parkings} Parkings</p>
-                <p className="card-text">{address}</p>
-                <Link to={`/property/${property.mls}`} className="btn btn-primary">
-                    View Detail
-                </Link>
-            </div>
+  const shortAddress = `${property.address.streetNumber} ${property.address.streetName}, ${property.address.city}`;
+
+  return (
+    <div className="property-card-container">
+      <div className="property-image">
+        <img
+          src={property.imageUrls?.[0] || "/placeholder-home.jpg"}
+          alt="Property"
+        />
+      </div>
+      <div className="property-info">
+        <div className="property-price">{formatPrice(property.price)}</div>
+        <div className="property-type">{property.type}</div>
+        <div className="property-specs">
+          <span>
+            <strong>{property.bedrooms}</strong> beds
+          </span>
+          <span>
+            <strong>{property.bathrooms}</strong> baths
+          </span>
+          <span>
+            <strong>{property.size}</strong> sqft
+          </span>
         </div>
-    );
+        <div className="property-address">{shortAddress}</div>
+        <Link to={`/property/${property.mls}`} className="view-details-btn">
+          View Details
+        </Link>
+      </div>
+    </div>
+  );
 };
 
 export default PropertyCard;

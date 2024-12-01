@@ -10,14 +10,10 @@ import { PropertyDto } from "../models/PropertyDto";
 import PropertyCard from "../components/PropertyCard";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { sectionStyle } from "../styles/styles";
-import debounce from "lodash/debounce";
 import "./Property.css";
 import {
   FaSearch,
   FaFilter,
-  FaList,
-  FaTh,
   FaHome,
   FaDollarSign,
   FaBed,
@@ -137,16 +133,16 @@ const Property: React.FC = () => {
     setError("");
   }, [properties]);
 
-  const debouncedFilter = useMemo(
-    () =>
-      debounce((filtered: PropertyDto[]) => {
-        setSearchResult(filtered);
-      }, 300),
-    []
-  );
-
   const filteredProperties = useMemo(() => {
-    let filtered = searchResult;
+    // Start with the original properties array for filter operations
+    let filtered = properties; // Changed from searchResult
+
+    // Only apply searchResult filter if there are search results
+    if (searchResult.length > 0) {
+      const searchMLSSet = new Set(searchResult.map((p) => p.mls));
+      filtered = filtered.filter((p) => searchMLSSet.has(p.mls));
+    }
+
     if (propertyType) {
       filtered = filtered.filter((property) => property.type === propertyType);
     }
@@ -173,6 +169,7 @@ const Property: React.FC = () => {
         property.tax <= taxRange[1]
     );
   }, [
+    properties,
     searchResult,
     propertyType,
     propertyStatus,
@@ -184,13 +181,6 @@ const Property: React.FC = () => {
     yearBuiltRange,
     taxRange,
   ]);
-
-  useEffect(() => {
-    debouncedFilter(filteredProperties);
-    return () => {
-      debouncedFilter.cancel();
-    };
-  }, [filteredProperties, debouncedFilter]);
 
   if (loading) {
     return (
@@ -313,20 +303,19 @@ const Property: React.FC = () => {
                 <option value="Semi">Semi</option>
                 <option value="Detached">Detached</option>
               </select>
+
+              <select
+                className="form-select mt-2"
+                value={propertyStatus}
+                onChange={(e) => setPropertyStatus(e.target.value)}
+              >
+                <option value="">All Statuses</option>
+                <option value="For Sale">For Sale</option>
+                <option value="Sold">Sold</option>
+                <option value="Terminated">Terminated</option>
+              </select>
             </div>
 
-            <select
-              className="form-select mt-2"
-              value={propertyStatus}
-              onChange={(e) => setPropertyStatus(e.target.value)}
-            >
-              <option value="">All Statuses</option>
-              <option value="For Sale">For Sale</option>
-              <option value="Sold">Sold</option>
-              <option value="Terminated">Terminated</option>
-            </select>
-          </div>
-          <div className="mb-3">
             <div className="filter-group">
               <label className="filter-label">
                 <FaDollarSign /> Price Range
@@ -341,7 +330,8 @@ const Property: React.FC = () => {
                   className="custom-slider"
                 />
                 <div className="range-value">
-                  ${priceRange[0].toLocaleString()} - ${priceRange[1].toLocaleString()}
+                  ${priceRange[0].toLocaleString()} - $
+                  {priceRange[1].toLocaleString()}
                 </div>
               </div>
             </div>
@@ -362,7 +352,8 @@ const Property: React.FC = () => {
                   className="custom-slider"
                 />
                 <div className="range-value">
-                  {bedroomsRange[0].toLocaleString()} - {bedroomsRange[1].toLocaleString()}
+                  {bedroomsRange[0].toLocaleString()} -{" "}
+                  {bedroomsRange[1].toLocaleString()}
                 </div>
               </div>
             </div>
@@ -383,7 +374,8 @@ const Property: React.FC = () => {
                   className="custom-slider"
                 />
                 <div className="range-value">
-                  {bathroomsRange[0].toLocaleString()} - {bathroomsRange[1].toLocaleString()}
+                  {bathroomsRange[0].toLocaleString()} -{" "}
+                  {bathroomsRange[1].toLocaleString()}
                 </div>
               </div>
             </div>
@@ -404,7 +396,8 @@ const Property: React.FC = () => {
                   className="custom-slider"
                 />
                 <div className="range-value">
-                  {parkingsRange[0].toLocaleString()} - {parkingsRange[1].toLocaleString()}
+                  {parkingsRange[0].toLocaleString()} -{" "}
+                  {parkingsRange[1].toLocaleString()}
                 </div>
               </div>
             </div>
@@ -423,7 +416,8 @@ const Property: React.FC = () => {
                   className="custom-slider"
                 />
                 <div className="range-value">
-                  {sizeRange[0].toLocaleString()} - {sizeRange[1].toLocaleString()}
+                  {sizeRange[0].toLocaleString()} -{" "}
+                  {sizeRange[1].toLocaleString()}
                 </div>
               </div>
             </div>
@@ -444,7 +438,8 @@ const Property: React.FC = () => {
                   className="custom-slider"
                 />
                 <div className="range-value">
-                  {yearBuiltRange[0].toLocaleString()} - {yearBuiltRange[1].toLocaleString()}
+                  {yearBuiltRange[0].toLocaleString()} -{" "}
+                  {yearBuiltRange[1].toLocaleString()}
                 </div>
               </div>
             </div>
@@ -462,7 +457,8 @@ const Property: React.FC = () => {
                   className="custom-slider"
                 />
                 <div className="range-value">
-                  {taxRange[0].toLocaleString()} - {taxRange[1].toLocaleString()}
+                  {taxRange[0].toLocaleString()} -{" "}
+                  {taxRange[1].toLocaleString()}
                 </div>
               </div>
             </div>
@@ -470,26 +466,14 @@ const Property: React.FC = () => {
         </div>
       </div>
       <div className="results-section mt-4">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="section-title mb-0">
-            <FaHome /> Properties
-          </h3>
-          <div className="view-toggle btn-group">
-            <button className="btn btn-outline-primary">
-              <FaTh /> Grid
-            </button>
-            <button className="btn btn-outline-primary">
-              <FaList /> List
-            </button>
-          </div>
-        </div>
+        <h3 className="section-title mb-3">
+          <FaHome /> Properties ({filteredProperties.length})
+        </h3>
 
         <div className="property-grid">
           {filteredProperties && filteredProperties.length > 0 ? (
             filteredProperties.map((property) => (
-              <div className="property-card" key={property.mls}>
-                <PropertyCard property={property} />
-              </div>
+              <PropertyCard key={property.mls} property={property} />
             ))
           ) : (
             <div className="no-results">No properties found</div>
