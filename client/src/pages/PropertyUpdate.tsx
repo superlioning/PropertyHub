@@ -283,7 +283,6 @@ const PropertyUpdate: React.FC = () => {
                     className="form-control"
                     name="mls"
                     value={property.mls}
-                    onChange={handleChange}
                     readOnly
                     disabled
                   />
