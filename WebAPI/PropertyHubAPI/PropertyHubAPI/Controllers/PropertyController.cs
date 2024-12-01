@@ -203,8 +203,9 @@ namespace PropertyHubAPI.Controllers
             }
 
             var updatedProperty = _mapper.Map<Property>(propertyUpdateDto);
-
-            var success = await _propertyHubRespository.UpdatePropertyAsync(property);
+            updatedProperty.MLS = mls;
+            updatedProperty.DateListed = property.DateListed;
+            var success = await _propertyHubRespository.UpdatePropertyAsync(updatedProperty);
 
             if (!success)
             {

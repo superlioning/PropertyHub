@@ -93,6 +93,7 @@ namespace PropertyHubAPI.Controllers
             }
 
             var updatedAgent = _mapper.Map<Agent>(agentUpdateDto);
+            updatedAgent.RegistrationNumber = registrationNumber;
 
             var success = await _agentRepository.UpdateAgentAsync(updatedAgent);
 
